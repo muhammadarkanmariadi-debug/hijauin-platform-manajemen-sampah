@@ -1,0 +1,1145 @@
+{
+  "info": {
+    "name": "Hijauin API",
+    "description": "Complete API collection for Hijauin - Smart Waste Management Platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "hijauin"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token', jsonData.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Customer\",\n  \"email\": \"john@customer.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"role\": \"customer\",\n  \"phone\": \"081234567890\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register Petugas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Budi Petugas\",\n  \"email\": \"budi@petugas.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"role\": \"petugas\",\n  \"phone\": \"081234567891\",\n  \"zone\": \"Jakarta Selatan\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token', jsonData.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@customer.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer - Addresses",
+      "item": [
+        {
+          "name": "Get All Addresses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customer/addresses",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "addresses"]
+            }
+          }
+        },
+        {
+          "name": "Create Address",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"Rumah\",\n  \"full_address\": \"Jl. Sudirman No. 123\",\n  \"kelurahan\": \"Kebayoran Baru\",\n  \"kecamatan\": \"Kebayoran Baru\",\n  \"city\": \"Jakarta Selatan\",\n  \"province\": \"DKI Jakarta\",\n  \"postal_code\": \"12180\",\n  \"latitude\": -6.2088,\n  \"longitude\": 106.8456,\n  \"is_default\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/customer/addresses",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "addresses"]
+            }
+          }
+        },
+        {
+          "name": "Get Address by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customer/addresses/1",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "addresses", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Address",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"Kantor\",\n  \"full_address\": \"Jl. Gatot Subroto No. 456\",\n  \"is_default\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/customer/addresses/1",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "addresses", "1"]
+            }
+          }
+        },
+        {
+          "name": "Set Default Address",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customer/addresses/1/set-default",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "addresses", "1", "set-default"]
+            }
+          }
+        },
+        {
+          "name": "Delete Address",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customer/addresses/1",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "addresses", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer - Orders",
+      "item": [
+        {
+          "name": "Get All Orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customer/orders",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "orders"]
+            }
+          }
+        },
+        {
+          "name": "Get Orders by Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customer/orders?status=pending",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "orders"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Upcoming Orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customer/orders/upcoming",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "orders", "upcoming"]
+            }
+          }
+        },
+        {
+          "name": "Get Order History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customer/orders/history",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "orders", "history"]
+            }
+          }
+        },
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address_id\": 1,\n  \"waste_type_id\": 1,\n  \"estimated_weight_kg\": 5.5,\n  \"estimated_volume\": 2,\n  \"scheduled_time\": \"2025-11-17 09:00:00\",\n  \"payment_method\": \"cod\",\n  \"customer_notes\": \"Sampah di depan pagar\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/customer/orders",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "orders"]
+            }
+          }
+        },
+        {
+          "name": "Get Order by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customer/orders/1",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "orders", "1"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Order",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cancellation_reason\": \"Rencana berubah\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/customer/orders/1/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "orders", "1", "cancel"]
+            }
+          }
+        },
+        {
+          "name": "Submit Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"petugas_id\": 2,\n  \"rating\": 5,\n  \"comment\": \"Petugas sangat ramah dan tepat waktu\",\n  \"service_aspect\": \"overall\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/customer/orders/1/review",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "orders", "1", "review"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer - Subscriptions",
+      "item": [
+        {
+          "name": "Get All Subscriptions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customer/subscriptions",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "subscriptions"]
+            }
+          }
+        },
+        {
+          "name": "Create Subscription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address_id\": 1,\n  \"waste_type_id\": 1,\n  \"plan_type\": \"weekly_2x\",\n  \"pickups_per_week\": 2,\n  \"pickup_days\": [1, 4],\n  \"preferred_time\": \"09:00\",\n  \"estimated_weight_per_pickup\": 5.0,\n  \"payment_method\": \"monthly_invoice\",\n  \"start_date\": \"2025-11-18\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/customer/subscriptions",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "subscriptions"]
+            }
+          }
+        },
+        {
+          "name": "Get Subscription by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customer/subscriptions/1",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "subscriptions", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Subscription",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pickup_days\": [1, 3, 5],\n  \"preferred_time\": \"10:00\",\n  \"estimated_weight_per_pickup\": 6.0\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/customer/subscriptions/1",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "subscriptions", "1"]
+            }
+          }
+        },
+        {
+          "name": "Pause Subscription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paused_until\": \"2025-12-01\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/customer/subscriptions/1/pause",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "subscriptions", "1", "pause"]
+            }
+          }
+        },
+        {
+          "name": "Resume Subscription",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customer/subscriptions/1/resume",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "subscriptions", "1", "resume"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Subscription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cancellation_reason\": \"Pindah rumah\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/customer/subscriptions/1/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "subscriptions", "1", "cancel"]
+            }
+          }
+        },
+        {
+          "name": "Delete Subscription",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customer/subscriptions/1",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "subscriptions", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer - Reports",
+      "item": [
+        {
+          "name": "Get All Reports",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customer/reports",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "reports"]
+            }
+          }
+        },
+        {
+          "name": "Create Report",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Sampah menumpuk di pinggir jalan",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Sudah 3 hari tidak diangkut",
+                  "type": "text"
+                },
+                {
+                  "key": "photo",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "location_address",
+                  "value": "Jl. Gatot Subroto",
+                  "type": "text"
+                },
+                {
+                  "key": "kelurahan",
+                  "value": "Kuningan",
+                  "type": "text"
+                },
+                {
+                  "key": "city",
+                  "value": "Jakarta Selatan",
+                  "type": "text"
+                },
+                {
+                  "key": "latitude",
+                  "value": "-6.2297",
+                  "type": "text"
+                },
+                {
+                  "key": "longitude",
+                  "value": "106.8281",
+                  "type": "text"
+                },
+                {
+                  "key": "priority",
+                  "value": "high",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/customer/reports",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "reports"]
+            }
+          }
+        },
+        {
+          "name": "Get Report by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customer/reports/1",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "reports", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Report",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated title\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/customer/reports/1",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "reports", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Report",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customer/reports/1",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "reports", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer - HijauPoints",
+      "item": [
+        {
+          "name": "Get HijauPoints History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customer/hijau-points",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "hijau-points"]
+            }
+          }
+        },
+        {
+          "name": "Get Points Balance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customer/hijau-points/balance",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "hijau-points", "balance"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Petugas - Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/petugas/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["petugas", "dashboard"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Petugas - Tasks",
+      "item": [
+        {
+          "name": "Get Today's Tasks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/petugas/tasks/today",
+              "host": ["{{base_url}}"],
+              "path": ["petugas", "tasks", "today"]
+            }
+          }
+        },
+        {
+          "name": "Get Upcoming Tasks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/petugas/tasks/upcoming",
+              "host": ["{{base_url}}"],
+              "path": ["petugas", "tasks", "upcoming"]
+            }
+          }
+        },
+        {
+          "name": "Get Task History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/petugas/tasks/history",
+              "host": ["{{base_url}}"],
+              "path": ["petugas", "tasks", "history"]
+            }
+          }
+        },
+        {
+          "name": "Get Task by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/petugas/tasks/1",
+              "host": ["{{base_url}}"],
+              "path": ["petugas", "tasks", "1"]
+            }
+          }
+        },
+        {
+          "name": "Accept Task",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/petugas/tasks/1/accept",
+              "host": ["{{base_url}}"],
+              "path": ["petugas", "tasks", "1", "accept"]
+            }
+          }
+        },
+        {
+          "name": "Start Pickup",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/petugas/tasks/1/start",
+              "host": ["{{base_url}}"],
+              "path": ["petugas", "tasks", "1", "start"]
+            }
+          }
+        },
+        {
+          "name": "Collect Waste",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "actual_weight_kg",
+                  "value": "6.2",
+                  "type": "text"
+                },
+                {
+                  "key": "photo",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/petugas/tasks/1/collect",
+              "host": ["{{base_url}}"],
+              "path": ["petugas", "tasks", "1", "collect"]
+            }
+          }
+        },
+        {
+          "name": "Complete Task",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/petugas/tasks/1/complete",
+              "host": ["{{base_url}}"],
+              "path": ["petugas", "tasks", "1", "complete"]
+            }
+          }
+        },
+        {
+          "name": "Fail Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Customer tidak ada di lokasi setelah menunggu 15 menit\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/petugas/tasks/1/fail",
+              "host": ["{{base_url}}"],
+              "path": ["petugas", "tasks", "1", "fail"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "dashboard"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get Users by Role",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users?role=petugas&status=active",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users"],
+              "query": [
+                {
+                  "key": "role",
+                  "value": "petugas"
+                },
+                {
+                  "key": "status",
+                  "value": "active"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users/1",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Name\",\n  \"phone\": \"081234567899\",\n  \"zone\": \"Jakarta Utara\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/users/1",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update User Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"inactive\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/users/1/status",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "1", "status"]
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users/1",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Orders",
+      "item": [
+        {
+          "name": "Get All Orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/orders",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "orders"]
+            }
+          }
+        },
+        {
+          "name": "Get Order by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/orders/1",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "orders", "1"]
+            }
+          }
+        },
+        {
+          "name": "Assign Order to Petugas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"petugas_id\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/orders/1/assign",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "orders", "1", "assign"]
+            }
+          }
+        },
+        {
+          "name": "Reassign Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"petugas_id\": 3,\n  \"reason\": \"Petugas sebelumnya tidak tersedia\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/orders/1/reassign",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "orders", "1", "reassign"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Reports",
+      "item": [
+        {
+          "name": "Get All Reports",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/reports",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "reports"]
+            }
+          }
+        },
+        {
+          "name": "Get Report by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/reports/1",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "reports", "1"]
+            }
+          }
+        },
+        {
+          "name": "Assign Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assigned_to\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/reports/1/assign",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "reports", "1", "assign"]
+            }
+          }
+        },
+        {
+          "name": "Update Report Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"resolved\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/reports/1/status",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "reports", "1", "status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public - Waste Types",
+      "item": [
+        {
+          "name": "Get All Waste Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/waste-types",
+              "host": ["{{base_url}}"],
+              "path": ["waste-types"]
+            }
+          }
+        },
+        {
+          "name": "Get Waste Type by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/waste-types/1",
+              "host": ["{{base_url}}"],
+              "path": ["waste-types", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public - Educational Content",
+      "item": [
+        {
+          "name": "Get All Content",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/educational-content",
+              "host": ["{{base_url}}"],
+              "path": ["educational-content"]
+            }
+          }
+        },
+        {
+          "name": "Get Content by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/educational-content/1",
+              "host": ["{{base_url}}"],
+              "path": ["educational-content", "1"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

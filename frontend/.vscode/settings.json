@@ -1,0 +1,5 @@
+{
+    "prisma-smart-formatter.typescript.defaultFormatter": "vscode.typescript-language-features",
+    "prisma-smart-formatter.typescriptreact.defaultFormatter": "numso.prettier-standard-vscode",
+    "prisma-smart-formatter.prisma.defaultFormatter": "Prisma.prisma-insider"
+}
