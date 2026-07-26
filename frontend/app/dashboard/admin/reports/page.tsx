@@ -24,7 +24,6 @@ export default function AdminReportsPage() {
     fetchReports()
     fetchPetugas()
   }, [])
-  s
 
   const fetchReports = async () => {
     try {

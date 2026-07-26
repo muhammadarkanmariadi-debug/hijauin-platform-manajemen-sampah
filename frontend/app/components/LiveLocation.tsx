@@ -8,7 +8,10 @@ import L from "leaflet";
 // Perbaiki icon Leaflet (supaya marker muncul)
 import iconUrl from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
-const DefaultIcon = L.icon({ iconUrl, shadowUrl: iconShadow });
+const DefaultIcon = L.icon({ 
+  iconUrl: typeof iconUrl === 'string' ? iconUrl : (iconUrl as any).src, 
+  shadowUrl: typeof iconShadow === 'string' ? iconShadow : (iconShadow as any).src 
+});
 L.Marker.prototype.options.icon = DefaultIcon;
 
 // Komponen untuk auto-center ke posisi terbaru
