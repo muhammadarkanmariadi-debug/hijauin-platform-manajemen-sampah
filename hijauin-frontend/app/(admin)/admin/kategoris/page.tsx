@@ -8,6 +8,7 @@ import { DataTableToolbar } from '@/components/common/DataTableToolbar';
 import { Pagination } from '@/components/ui/Pagination';
 import CloudinaryImageUpload from '@/components/common/CloudinaryImageUpload';
 import Combobox, { type ComboboxOption } from '@/components/common/Combobox';
+import RupiahInput from '@/components/ui/RupiahInput';
 import type { JenisSampah } from '@/lib/types';
 
 const MATERIAL_OPTIONS: ComboboxOption[] = [
@@ -404,21 +405,20 @@ export default function AdminKategorisPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-stone-800 mb-1">
-                      Tarif Rupiah per kg
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
+                    <RupiahInput
+                      label="Tarif Rupiah per kg"
                       value={hargaPerKg}
-                      onChange={(e) => setHargaPerKg(e.target.value)}
+                      onValueChange={(rawVal) => setHargaPerKg(String(rawVal))}
+                      suffix="/ kg"
+                      inputSize="sm"
+                      placeholder="Contoh: 3.000"
+                      quickAmounts={[1000, 2500, 5000]}
                       required
-                      className="w-full text-xs px-3 py-2 border border-stone-300 rounded-[4px] focus:outline-none focus:border-[#0B3D26] bg-[#FAF8F5]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-stone-800 mb-1">
+                    <label className="block text-xs font-semibold text-stone-800 mb-1.5">
                       Poin per kg
                     </label>
                     <input
