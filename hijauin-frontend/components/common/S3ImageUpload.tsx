@@ -62,6 +62,7 @@ export default function S3ImageUpload({
           'Content-Type': 'multipart/form-data',
         },
       });
+      
 
       const uploadedUrl = response.data?.data?.url || response.data?.url;
       if (uploadedUrl) {

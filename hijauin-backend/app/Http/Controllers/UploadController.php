@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -37,6 +38,9 @@ class UploadController extends Controller
                 'visibility' => 'public',
             ]);
 
+
+            
+
             if (!$path) {
                 throw new \RuntimeException("Failed to store file on disk: {$disk}");
             }
@@ -49,6 +53,15 @@ class UploadController extends Controller
                 $region = config('filesystems.disks.s3.region', 'ap-southeast-2');
                 $url = "https://{$bucket}.s3.{$region}.amazonaws.com/" . ltrim($path, '/');
             }
+
+            Log::info('File uploaded successfully', [
+                'path' => $path,
+                'url' => $url,
+                'disk' => $disk,
+                'filename' => $filename,
+                'size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+            ]);
         } catch (\Throwable $e) {
             // Fallback to local public disk if S3 network or permissions fail
             if ($disk === 's3') {
