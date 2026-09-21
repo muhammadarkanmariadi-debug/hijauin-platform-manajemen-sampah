@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+
+  /* DESIGN.md Color Tokens */
+  --void-900: #14140F;
+  --bone-100: #F1ECDF;
+  --forest-950: #0B3D26;
+  --forest-700: #1F6B3F;
+  --growth-500: #4FA65C;
+  --alarm-600: #C1441F;
+  --haze-400: #7C8574;
+
+  /* Material Palette Tokens */
+  --jenis-plastik: #2F7DB8;
+  --jenis-kertas: #B8873A;
+  --jenis-logam: #8A94A0;
+  --jenis-kaca: #4FA6A0;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-fraunces);
+
+  --color-void-900: var(--void-900);
+  --color-bone-100: var(--bone-100);
+  --color-forest-950: var(--forest-950);
+  --color-forest-700: var(--forest-700);
+  --color-growth-500: var(--growth-500);
+  --color-alarm-600: var(--alarm-600);
+  --color-haze-400: var(--haze-400);
+
+  --color-jenis-plastik: var(--jenis-plastik);
+  --color-jenis-kertas: var(--jenis-kertas);
+  --color-jenis-logam: var(--jenis-logam);
+  --color-jenis-kaca: var(--jenis-kaca);
+}
+
+.font-display {
+  font-family: var(--font-fraunces), Georgia, serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+

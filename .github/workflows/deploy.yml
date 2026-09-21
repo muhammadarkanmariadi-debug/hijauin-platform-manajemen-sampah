@@ -1,0 +1,333 @@
+# Deploy Hijauin 2.0 to EC2 (Docker + Amazon ECR)
+#
+# Monorepo architecture:
+#   - hijauin-backend: Laravel 13 + PHP 8.3 + PostgreSQL + Redis (PhpRedis/Predis)
+#   - hijauin-frontend: Next.js 16 + Tailwind CSS + TanStack Query
+#
+# Dedicated EC2 Port Allocation (Conflict-Free alongside Mexpo & JHIC):
+#   - Hijauin Frontend: 3002 (Mexpo=3000, JHIC=3001)
+#   - Hijauin Backend:  5001 (Mexpo=3500, JHIC=5000)
+#   - Hijauin Database: 5434 (Mexpo=5432, JHIC=5433)
+#   - Hijauin Redis:    6380 (JHIC=6379)
+#
+# Required GitHub Actions Secrets:
+#   AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY   — IAM credentials with ECR push permissions
+#   AWS_REGION                                   — e.g. ap-southeast-2 or ap-southeast-1
+#   ECR_BACKEND_IMAGE                            — Backend ECR Repository URI
+#   ECR_FRONTEND_IMAGE                           — Frontend ECR Repository URI
+#   EC2_HOST / EC2_USER / EC2_SSH_KEY            — Target EC2 instance SSH configuration
+#   APP_KEY                                      — Laravel Encryption Key
+#   DB_USER, DB_PASSWORD, DB_DATABASE            — PostgreSQL Database configuration
+#   REDIS_PASSWORD                               — Redis Cache password (optional)
+#   CORS_ORIGIN / FRONTEND_URL                   — Allowed frontend origins
+#   NEXT_PUBLIC_API_URL                          — Public API endpoint for frontend client
+#   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME            — Cloudinary cloud name
+#   NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET         — Cloudinary upload preset
+#   NEXT_PUBLIC_GOOGLE_CLIENT_ID                 — Google OAuth Client ID
+
+name: Deploy Hijauin to EC2
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Trigger reason / User identifier"
+        required: false
+        default: "Manual Admin Trigger"
+
+concurrency:
+  group: hijauin-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+
+  # ----------------------------------------------------------------------------
+  # Job 1: Backend CI (PHP / Composer / Tests)
+  # ----------------------------------------------------------------------------
+  backend-ci:
+    name: Backend Lint & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_pgsql, pgsql, redis, bcmath
+          coverage: none
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: /tmp/composer-cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer Dependencies
+        working-directory: ./hijauin-backend
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Run Backend Tests
+        working-directory: ./hijauin-backend
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+          CACHE_STORE: array
+        run: php artisan test
+
+  # ----------------------------------------------------------------------------
+  # Job 2: Frontend CI (Node / ESLint / Next.js Build)
+  # ----------------------------------------------------------------------------
+  frontend-ci:
+    name: Frontend Lint & Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: hijauin-frontend/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: ./hijauin-frontend
+        run: npm ci
+
+      - name: Lint Frontend
+        working-directory: ./hijauin-frontend
+        run: npm run lint
+
+      - name: Build Next.js App
+        working-directory: ./hijauin-frontend
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api' }}
+          NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: ${{ secrets.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'hijauin-app' }}
+          NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: ${{ secrets.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'hijauin_preset' }}
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '' }}
+        run: npm run build
+
+  # ----------------------------------------------------------------------------
+  # Job 3: Build and Push Docker Images to Amazon ECR
+  # ----------------------------------------------------------------------------
+  build-and-push:
+    name: Build & Push Images to ECR
+    needs: [backend-ci, frontend-ci]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./hijauin-backend
+          file: ./hijauin-backend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.ECR_BACKEND_IMAGE }}:latest
+            ${{ secrets.ECR_BACKEND_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./hijauin-frontend
+          file: ./hijauin-frontend/Dockerfile
+          push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api' }}
+            NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=${{ secrets.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'hijauin-app' }}
+            NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=${{ secrets.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'hijauin_preset' }}
+            NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '' }}
+          tags: |
+            ${{ secrets.ECR_FRONTEND_IMAGE }}:latest
+            ${{ secrets.ECR_FRONTEND_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ----------------------------------------------------------------------------
+  # Job 4: Deploy to EC2 via SSH
+  # ----------------------------------------------------------------------------
+  deploy-to-ec2:
+    name: Deploy to EC2 Instance
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials for ECR pull token
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Mint short-lived ECR pull token
+        id: ecr-token
+        run: |
+          echo "ecr_token=$(aws ecr get-login-password --region ${{ secrets.AWS_REGION }})" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure deployment directory on EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          timeout: 30s
+          command_timeout: 5m
+          script: |
+            mkdir -p /opt/hijauin/app
+
+      - name: Upload compose configuration
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          timeout: 30s
+          command_timeout: 5m
+          source: "docker-compose.prod.yml"
+          target: "/opt/hijauin/app"
+
+      - name: Write runtime environment, pull images, and restart stack
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          ECR_TOKEN: ${{ steps.ecr-token.outputs.ecr_token }}
+          ECR_BACKEND_IMAGE: ${{ secrets.ECR_BACKEND_IMAGE }}
+          ECR_FRONTEND_IMAGE: ${{ secrets.ECR_FRONTEND_IMAGE }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          TAG: latest
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          timeout: 30s
+          command_timeout: 10m
+          envs: ECR_TOKEN,ECR_BACKEND_IMAGE,ECR_FRONTEND_IMAGE,AWS_REGION,TAG
+          script: |
+            set -e
+
+            cd /opt/hijauin/app
+
+            # Write runtime environment for Docker Compose
+            cat > .env <<EOF
+            TAG=${TAG}
+            ECR_BACKEND_IMAGE=${ECR_BACKEND_IMAGE}
+            ECR_FRONTEND_IMAGE=${ECR_FRONTEND_IMAGE}
+
+            # Application & Security
+            APP_NAME="${{ secrets.APP_NAME || 'Hijauin' }}"
+            APP_ENV=production
+            APP_KEY="${{ secrets.APP_KEY }}"
+            APP_DEBUG=${{ secrets.APP_DEBUG || 'false' }}
+            APP_URL="${{ secrets.APP_URL || 'http://localhost:5001' }}"
+
+            # Database Configuration (Internal container uses 'db' on port 5432, exposed on host port 5434)
+            DB_CONNECTION=pgsql
+            DB_HOST=db
+            DB_PORT=5432
+            DB_HOST_PORT=${{ secrets.DB_HOST_PORT || '5434' }}
+            DB_USER="${{ secrets.DB_USER || 'postgres' }}"
+            DB_PASSWORD="${{ secrets.DB_PASSWORD || '010709Am' }}"
+            DB_DATABASE="${{ secrets.DB_DATABASE || 'hijauin_backend' }}"
+
+            # Redis Cache Configuration (Internal container uses 'redis' on port 6379, exposed on host port 6380)
+            CACHE_STORE=redis
+            REDIS_CLIENT=phpredis
+            REDIS_HOST=redis
+            REDIS_PORT=6379
+            REDIS_HOST_PORT=${{ secrets.REDIS_HOST_PORT || '6380' }}
+            REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD || '' }}"
+            SESSION_DRIVER=redis
+            QUEUE_CONNECTION=redis
+
+            # Cloudinary Configuration
+            CLOUDINARY_CLOUD_NAME="${{ secrets.CLOUDINARY_CLOUD_NAME || secrets.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'hijauin-app' }}"
+            CLOUDINARY_API_KEY="${{ secrets.CLOUDINARY_API_KEY || '' }}"
+            CLOUDINARY_API_SECRET="${{ secrets.CLOUDINARY_API_SECRET || '' }}"
+            CLOUDINARY_URL="${{ secrets.CLOUDINARY_URL || '' }}"
+
+            # Backend & Frontend Networking
+            BACKEND_PORT=${{ secrets.BACKEND_PORT || '5001' }}
+            FRONTEND_PORT=${{ secrets.FRONTEND_PORT || '3002' }}
+            FRONTEND_URL="${{ secrets.FRONTEND_URL || 'http://localhost:3002' }}"
+            CORS_ORIGIN="${{ secrets.CORS_ORIGIN || 'http://localhost:3002' }}"
+            SANCTUM_STATEFUL_DOMAINS="${{ secrets.SANCTUM_STATEFUL_DOMAINS || 'localhost:3002,127.0.0.1:3002' }}"
+
+            # Frontend Client Environment
+            NEXT_PUBLIC_API_URL="${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api' }}"
+            NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="${{ secrets.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'hijauin-app' }}"
+            NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET="${{ secrets.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'hijauin_preset' }}"
+            NEXT_PUBLIC_GOOGLE_CLIENT_ID="${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '' }}"
+            EOF
+
+            # Detect compose command syntax (docker compose vs docker-compose)
+            if docker compose version >/dev/null 2>&1; then
+              COMPOSE="docker compose -p hijauin-prod"
+            else
+              COMPOSE="docker-compose -p hijauin-prod"
+            fi
+
+            # Authenticate against AWS ECR on EC2 using minted token
+            if [ -n "$ECR_BACKEND_IMAGE" ]; then
+              REGISTRY=$(echo "$ECR_BACKEND_IMAGE" | cut -d'/' -f1)
+              echo "$ECR_TOKEN" | docker login --username AWS --password-stdin "$REGISTRY" >/dev/null
+            fi
+
+            # Pull latest built images and start stack
+            $COMPOSE -f docker-compose.prod.yml pull
+            $COMPOSE -f docker-compose.prod.yml up -d --remove-orphans
+
+            # Wait for PostgreSQL container to become ready and healthy
+            echo "⏳ Waiting for PostgreSQL container to be ready..."
+            for i in $(seq 1 30); do
+              if $COMPOSE -f docker-compose.prod.yml exec -T db pg_isready -U "${{ secrets.DB_USER || 'postgres' }}" -d "${{ secrets.DB_DATABASE || 'hijauin_backend' }}" >/dev/null 2>&1; then
+                echo "✅ PostgreSQL is ready and accepting connections!"
+                break
+              fi
+              echo "Waiting for database ($i/30)..."
+              sleep 2
+            done
+
+            # Automatically run database migrations & cache optimizations
+            echo "📦 Running automated database migrations & cache warmup..."
+            $COMPOSE -f docker-compose.prod.yml exec -T backend php artisan migrate --force
+            $COMPOSE -f docker-compose.prod.yml exec -T backend php artisan config:cache
+            $COMPOSE -f docker-compose.prod.yml exec -T backend php artisan route:cache
+
+            # Clean up dangling images to preserve disk space
+            docker image prune -f || true

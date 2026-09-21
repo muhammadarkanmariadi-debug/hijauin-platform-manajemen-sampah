@@ -1,0 +1,19 @@
+{
+  "name": "hijauin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hijauin — Platform Bank Sampah Digital",
+  "scripts": {
+    "dev:backend": "cd hijauin-backend && composer dev",
+    "dev:frontend": "cd hijauin-frontend && npm run dev",
+    "dev": "npx -y concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "migrate": "cd hijauin-backend && php artisan migrate",
+    "migrate:fresh": "cd hijauin-backend && php artisan migrate:fresh",
+    "seed": "cd hijauin-backend && php artisan db:seed",
+    "seed:rbac": "cd hijauin-backend && php artisan db:seed --class=RbacSeeder",
+    "fresh": "cd hijauin-backend && php artisan migrate:fresh --seed",
+    "test": "cd hijauin-backend && php artisan test",
+    "lint": "cd hijauin-frontend && npm run lint",
+    "routes": "cd hijauin-backend && php artisan route:list"
+  }
+}

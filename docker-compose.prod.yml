@@ -1,0 +1,142 @@
+name: hijauin-prod
+
+services:
+  # ----------------------------------------------------------------------------
+  # PostgreSQL Database Service
+  # ----------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: hijauin_prod_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-hijauin_backend}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-010709Am}
+    ports:
+      - "${DB_HOST_PORT:-5434}:5432"
+    volumes:
+      - hijauin_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_DATABASE:-hijauin_backend}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - hijauin_prod_network
+
+  # ----------------------------------------------------------------------------
+  # Redis In-Memory Cache & Queue Service
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: hijauin_prod_redis
+    restart: unless-stopped
+    command: >
+      sh -c '
+        if [ -n "$$REDIS_PASSWORD" ]; then
+          redis-server --requirepass "$$REDIS_PASSWORD"
+        else
+          redis-server
+        fi
+      '
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    ports:
+      - "${REDIS_HOST_PORT:-6380}:6379"
+    volumes:
+      - hijauin_redis_data:/data
+    healthcheck:
+      test: >
+        sh -c '
+          if [ -n "$$REDIS_PASSWORD" ]; then
+            redis-cli -a "$$REDIS_PASSWORD" ping | grep PONG
+          else
+            redis-cli ping | grep PONG
+          fi
+        '
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - hijauin_prod_network
+
+  # ----------------------------------------------------------------------------
+  # Backend API Service (Laravel 13 + PHP 8.3 + Nginx)
+  # ----------------------------------------------------------------------------
+  backend:
+    image: ${ECR_BACKEND_IMAGE:-hijauin-backend}:${TAG:-latest}
+    container_name: hijauin_prod_backend
+    restart: unless-stopped
+    environment:
+      APP_NAME: ${APP_NAME:-Hijauin}
+      APP_ENV: production
+      APP_KEY: ${APP_KEY}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_URL: ${APP_URL:-http://localhost:5001}
+      LOG_CHANNEL: stderr
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-hijauin_backend}
+      DB_USERNAME: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD}
+      CACHE_STORE: redis
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_PORT: 6379
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3002}
+      SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-localhost:3002,127.0.0.1:3002}
+      CORS_ALLOWED_ORIGINS: ${CORS_ORIGIN:-http://localhost:3002}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-hijauin-app}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+      CLOUDINARY_URL: ${CLOUDINARY_URL:-}
+      PORT: 5000
+    ports:
+      - "${BACKEND_PORT:-5001}:5000"
+    volumes:
+      - hijauin_backend_storage:/var/www/storage
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - hijauin_prod_network
+
+  # ----------------------------------------------------------------------------
+  # Frontend Application Service (Next.js 16 Standalone)
+  # ----------------------------------------------------------------------------
+  frontend:
+    image: ${ECR_FRONTEND_IMAGE:-hijauin-frontend}:${TAG:-latest}
+    container_name: hijauin_prod_frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5001/api}
+      NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: ${NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME:-hijauin-app}
+      NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: ${NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET:-hijauin_preset}
+      NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
+      INTERNAL_API_URL: http://backend:5000
+    ports:
+      - "${FRONTEND_PORT:-3002}:3000"
+    depends_on:
+      - backend
+    networks:
+      - hijauin_prod_network
+
+volumes:
+  hijauin_postgres_data:
+    driver: local
+  hijauin_redis_data:
+    driver: local
+  hijauin_backend_storage:
+    driver: local
+
+networks:
+  hijauin_prod_network:
+    driver: bridge

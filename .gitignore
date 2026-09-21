@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+.next/
+hijauin-frontend/.next/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Laravel
+hijauin-backend/storage/*.key
+hijauin-backend/bootstrap/cache/*
+hijauin-backend/public/hot
+hijauin-backend/public/storage
+
+# Database
+*.sqlite
+*.sqlite-journal
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/
+.phpunit.result.cache
