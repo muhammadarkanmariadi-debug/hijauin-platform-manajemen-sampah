@@ -26,11 +26,24 @@ class UploadController extends Controller
         // Sanitize folder name
         $folder = trim(preg_replace('/[^a-zA-Z0-9_\-\/]/', '', $folder), '/');
 
-        // Determine target disk: prefer 's3' if configured, fallback to 'public'
-        $hasS3Config = !empty(config('filesystems.disks.s3.bucket')) && !empty(config('filesystems.disks.s3.key'));
+        $bucket = config('filesystems.disks.s3.bucket');
+        $s3Key = config('filesystems.disks.s3.key');
+        $hasS3Config = !empty($bucket) && !empty($s3Key);
         $disk = $hasS3Config ? 's3' : 'public';
 
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+        $startTime = microtime(true);
+
+        Log::info('[Storage::Upload] 🚀 Memulai proses upload file', [
+            'original_name' => $file->getClientOriginalName(),
+            'target_folder' => $folder,
+            'generated_filename' => $filename,
+            'target_disk' => $disk,
+            'file_size_bytes' => $file->getSize(),
+            'mime_type' => $file->getMimeType(),
+            's3_configured' => $hasS3Config,
+            's3_bucket' => $bucket,
+        ]);
 
         try {
             $path = $file->storeAs($folder, $filename, [
@@ -38,39 +51,57 @@ class UploadController extends Controller
                 'visibility' => 'public',
             ]);
 
-
-            
-
             if (!$path) {
-                throw new \RuntimeException("Failed to store file on disk: {$disk}");
+                throw new \RuntimeException("Storage::storeAs gagal menyimpan file pada disk: [{$disk}]");
             }
 
             $url = Storage::disk($disk)->url($path);
 
             // Ensure absolute S3 URL if Flysystem returned a relative path
             if ($disk === 's3' && (!str_starts_with($url, 'http://') && !str_starts_with($url, 'https://'))) {
-                $bucket = config('filesystems.disks.s3.bucket');
                 $region = config('filesystems.disks.s3.region', 'ap-southeast-2');
                 $url = "https://{$bucket}.s3.{$region}.amazonaws.com/" . ltrim($path, '/');
             }
 
-            Log::info('File uploaded successfully', [
-                'path' => $path,
-                'url' => $url,
+            $durationMs = round((microtime(true) - $startTime) * 1000, 2);
+
+            Log::info("[Storage::Upload] ✅ Upload ke [{$disk}] BERHASIL", [
                 'disk' => $disk,
-                'filename' => $filename,
-                'size' => $file->getSize(),
-                'mime_type' => $file->getMimeType(),
+                'bucket' => $disk === 's3' ? $bucket : null,
+                'path' => $path,
+                'public_url' => $url,
+                'duration_ms' => $durationMs,
             ]);
+
         } catch (\Throwable $e) {
-            // Fallback to local public disk if S3 network or permissions fail
+            $durationMs = round((microtime(true) - $startTime) * 1000, 2);
+
+            Log::warning("[Storage::Upload] ⚠️ Upload ke [{$disk}] GAGAL ({$durationMs}ms): {$e->getMessage()}", [
+                'disk' => $disk,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            // Fallback to local public disk if S3 fails
             if ($disk === 's3') {
-                $disk = 'public';
-                $path = $file->storeAs($folder, $filename, [
-                    'disk' => 'public',
-                    'visibility' => 'public',
-                ]);
-                $url = Storage::disk('public')->url($path);
+                Log::info('[Storage::Upload] 🔄 Mencoba fallback otomatis ke disk lokal [public]...');
+                try {
+                    $disk = 'public';
+                    $path = $file->storeAs($folder, $filename, [
+                        'disk' => 'public',
+                        'visibility' => 'public',
+                    ]);
+                    $url = Storage::disk('public')->url($path);
+
+                    Log::info('[Storage::Upload] ✅ Fallback ke disk lokal [public] BERHASIL', [
+                        'path' => $path,
+                        'public_url' => $url,
+                    ]);
+                } catch (\Throwable $fallbackErr) {
+                    Log::error('[Storage::Upload] ❌ Fallback ke disk lokal juga GAGAL: ' . $fallbackErr->getMessage());
+                    return $this->errorResponse('Gagal mengunggah file: ' . $fallbackErr->getMessage(), 500);
+                }
             } else {
                 return $this->errorResponse('Gagal mengunggah file: ' . $e->getMessage(), 500);
             }
