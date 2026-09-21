@@ -206,7 +206,8 @@ jobs:
           timeout: 30s
           command_timeout: 5m
           script: |
-            mkdir -p /opt/hijauin/app
+            mkdir -p /opt/hijauin/app 
+            chmod -R 777 /opt/hijauin/app
 
       - name: Upload compose configuration
         uses: appleboy/scp-action@v1.0.0
