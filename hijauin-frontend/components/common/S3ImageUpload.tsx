@@ -111,6 +111,15 @@ export default function S3ImageUpload({
     }
   };
 
+  const hasValidValue = Boolean(
+    value &&
+      typeof value === 'string' &&
+      value.trim() !== '' &&
+      value.trim() !== '/' &&
+      value.trim() !== 'null' &&
+      value.trim() !== 'undefined'
+  );
+
   return (
     <div className="space-y-2">
       {label && (
@@ -119,14 +128,14 @@ export default function S3ImageUpload({
         </label>
       )}
 
-      {value ? (
+      {hasValidValue && value ? (
         <div className="relative w-full max-w-sm h-48 rounded-[4px] border border-stone-200 overflow-hidden bg-stone-100 group">
           <Image
             src={value}
             alt="Uploaded image"
             fill
             className="object-cover"
-            unoptimized={value.startsWith('http')}
+            unoptimized
           />
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
             {onRemove && (

@@ -25,16 +25,43 @@ class UploadController extends Controller
         // Sanitize folder name
         $folder = trim(preg_replace('/[^a-zA-Z0-9_\-\/]/', '', $folder), '/');
 
-        // Determine target disk: prefer 's3' if configured or fallback to public disk
-        $disk = config('filesystems.default') === 's3' || env('AWS_BUCKET') ? 's3' : 'public';
+        // Determine target disk: prefer 's3' if configured, fallback to 'public'
+        $hasS3Config = !empty(config('filesystems.disks.s3.bucket')) && !empty(config('filesystems.disks.s3.key'));
+        $disk = $hasS3Config ? 's3' : 'public';
 
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs($folder, $filename, [
-            'disk' => $disk,
-            'visibility' => 'public',
-        ]);
 
-        $url = Storage::disk($disk)->url($path);
+        try {
+            $path = $file->storeAs($folder, $filename, [
+                'disk' => $disk,
+                'visibility' => 'public',
+            ]);
+
+            if (!$path) {
+                throw new \RuntimeException("Failed to store file on disk: {$disk}");
+            }
+
+            $url = Storage::disk($disk)->url($path);
+
+            // Ensure absolute S3 URL if Flysystem returned a relative path
+            if ($disk === 's3' && (!str_starts_with($url, 'http://') && !str_starts_with($url, 'https://'))) {
+                $bucket = config('filesystems.disks.s3.bucket');
+                $region = config('filesystems.disks.s3.region', 'ap-southeast-2');
+                $url = "https://{$bucket}.s3.{$region}.amazonaws.com/" . ltrim($path, '/');
+            }
+        } catch (\Throwable $e) {
+            // Fallback to local public disk if S3 network or permissions fail
+            if ($disk === 's3') {
+                $disk = 'public';
+                $path = $file->storeAs($folder, $filename, [
+                    'disk' => 'public',
+                    'visibility' => 'public',
+                ]);
+                $url = Storage::disk('public')->url($path);
+            } else {
+                return $this->errorResponse('Gagal mengunggah file: ' . $e->getMessage(), 500);
+            }
+        }
 
         return $this->successResponse([
             'url' => $url,
