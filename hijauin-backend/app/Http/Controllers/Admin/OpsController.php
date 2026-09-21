@@ -83,7 +83,8 @@ class OpsController extends Controller
 
             $units = BankSampahUnit::withCount('nasabahProfiles')
                 ->orderBy('id')
-                ->get();
+                ->get()
+                ->toArray();
 
             return [
                 'total_units' => $totalUnits,
@@ -250,7 +251,8 @@ class OpsController extends Controller
         $roles = Cache::remember($cacheKey, 86400, function () {
             return Role::with('permissions')
                 ->withCount('userRoles')
-                ->get();
+                ->get()
+                ->toArray();
         });
 
         return $this->successResponse($roles);
@@ -269,7 +271,7 @@ class OpsController extends Controller
             $sortBy = $request->input('sort_by', 'id');
             $sortDir = strtolower($request->input('sort_dir', 'asc')) === 'desc' ? 'desc' : 'asc';
 
-            $query = BankSampahUnit::withCount(['nasabahProfiles', 'kategoris']);
+            $query = BankSampahUnit::withCount(['nasabahProfiles', 'kategoriSampahs']);
 
             if ($search) {
                 $query->where(function ($q) use ($search) {
@@ -292,7 +294,7 @@ class OpsController extends Controller
                 $paginator = $query->paginate($pageSize);
                 return [
                     'is_paginated' => true,
-                    'data' => $paginator->items(),
+                    'data' => $paginator->getCollection()->toArray(),
                     'meta' => [
                         'page' => $paginator->currentPage(),
                         'pageSize' => $paginator->perPage(),
@@ -303,7 +305,7 @@ class OpsController extends Controller
 
             return [
                 'is_paginated' => false,
-                'data' => $query->get(),
+                'data' => $query->get()->toArray(),
             ];
         });
 
