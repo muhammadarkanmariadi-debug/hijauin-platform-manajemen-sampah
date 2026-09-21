@@ -207,8 +207,9 @@ jobs:
           timeout: 30s
           command_timeout: 5m
           script: |
-            mkdir -p /opt/hijauin/app 
-            chmod -R 777 /opt/hijauin/app
+            sudo mkdir -p /opt/hijauin/app
+            sudo chown -R $USER:$USER /opt/hijauin
+            sudo chmod -R 775 /opt/hijauin
 
       - name: Upload compose configuration
         uses: appleboy/scp-action@v1.0.0
