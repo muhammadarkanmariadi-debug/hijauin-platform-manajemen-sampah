@@ -46,10 +46,10 @@ class UploadController extends Controller
         ]);
 
         try {
-            $path = $file->storeAs($folder, $filename, [
-                'disk' => $disk,
-                'visibility' => 'public',
-            ]);
+            // Do not pass 'visibility' => 'public' for S3 because modern S3 buckets disable ACLs
+            // (Bucket Owner Enforced) and rely on S3 Bucket Policy for public access.
+            $storeOptions = $disk === 's3' ? ['disk' => 's3'] : ['disk' => 'public', 'visibility' => 'public'];
+            $path = $file->storeAs($folder, $filename, $storeOptions);
 
             if (!$path) {
                 throw new \RuntimeException("Storage::storeAs gagal menyimpan file pada disk: [{$disk}]");
