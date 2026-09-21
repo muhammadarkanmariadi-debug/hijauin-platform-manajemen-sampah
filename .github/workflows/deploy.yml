@@ -114,7 +114,7 @@ jobs:
       - name: Build Next.js App
         working-directory: ./hijauin-frontend
         env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api' }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || '/api' }}
           NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '' }}
         run: npm run build
 
@@ -164,7 +164,7 @@ jobs:
           file: ./hijauin-frontend/Dockerfile
           push: true
           build-args: |
-            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api' }}
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL || '/api' }}
             NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '' }}
           tags: |
             ${{ secrets.ECR_FRONTEND_IMAGE }}:latest
@@ -289,12 +289,12 @@ jobs:
             # Backend & Frontend Networking
             BACKEND_PORT=${{ secrets.BACKEND_PORT || '5001' }}
             FRONTEND_PORT=${{ secrets.FRONTEND_PORT || '3002' }}
-            FRONTEND_URL="${{ secrets.FRONTEND_URL || 'http://localhost:3002' }}"
-            CORS_ORIGIN="${{ secrets.CORS_ORIGIN || 'http://localhost:3002' }}"
-            SANCTUM_STATEFUL_DOMAINS="${{ secrets.SANCTUM_STATEFUL_DOMAINS || 'localhost:3002,127.0.0.1:3002' }}"
+            FRONTEND_URL="${{ secrets.FRONTEND_URL || 'https://hijauin.4rk4n.dev' }}"
+            CORS_ORIGIN="${{ secrets.CORS_ORIGIN || 'https://hijauin.4rk4n.dev,http://localhost:3002' }}"
+            SANCTUM_STATEFUL_DOMAINS="${{ secrets.SANCTUM_STATEFUL_DOMAINS || 'hijauin.4rk4n.dev,localhost:3002,127.0.0.1:3002' }}"
 
             # Frontend Client Environment
-            NEXT_PUBLIC_API_URL="${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api' }}"
+            NEXT_PUBLIC_API_URL="${{ secrets.NEXT_PUBLIC_API_URL || '/api' }}"
             NEXT_PUBLIC_GOOGLE_CLIENT_ID="${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '' }}"
             EOF
 

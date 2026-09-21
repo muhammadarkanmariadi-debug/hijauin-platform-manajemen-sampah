@@ -13,7 +13,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Build arguments for frontend environment variables
-ARG NEXT_PUBLIC_API_URL=http://localhost:5001/api
+ARG NEXT_PUBLIC_API_URL=/api
 ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID
 
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL

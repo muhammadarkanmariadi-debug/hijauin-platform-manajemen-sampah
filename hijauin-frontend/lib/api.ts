@@ -7,13 +7,23 @@ import type { ApiError } from './types';
  *
  * - Auth token injected from localStorage via request interceptor
  * - Errors normalized to ApiError shape (TRD §3)
- * - Base URL configurable via env
+ * - Base URL defaults to relative '/api' in browser for seamless reverse proxying
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const getApiBaseUrl = (): string => {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (typeof window !== 'undefined') {
+    // If envUrl is missing or accidentally baked in as localhost while browsing a remote domain, fallback to relative '/api'
+    if (!envUrl || (envUrl.includes('localhost:') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')) {
+      return '/api';
+    }
+    return envUrl;
+  }
+  return process.env.INTERNAL_API_URL || envUrl || 'http://backend:5000/api';
+};
 
 const api: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: getApiBaseUrl(),
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
