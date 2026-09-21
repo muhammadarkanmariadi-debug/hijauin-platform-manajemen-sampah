@@ -14,6 +14,10 @@
     "fresh": "cd hijauin-backend && php artisan migrate:fresh --seed",
     "test": "cd hijauin-backend && php artisan test",
     "lint": "cd hijauin-frontend && npm run lint",
-    "routes": "cd hijauin-backend && php artisan route:list"
+    "routes": "cd hijauin-backend && php artisan route:list",
+    "secrets:import": "node scripts/import-github-secrets.mjs"
+  },
+  "devDependencies": {
+    "libsodium-wrappers": "^0.8.4"
   }
 }

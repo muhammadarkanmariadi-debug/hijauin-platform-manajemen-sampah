@@ -1,7 +1,7 @@
 # Deploy Hijauin 2.0 to EC2 (Docker + Amazon ECR)
 #
 # Monorepo architecture:
-#   - hijauin-backend: Laravel 13 + PHP 8.3 + PostgreSQL + Redis (PhpRedis/Predis)
+#   - hijauin-backend: Laravel 13 + PHP 8.3 + PostgreSQL + Redis + AWS S3 Storage
 #   - hijauin-frontend: Next.js 16 + Tailwind CSS + TanStack Query
 #
 # Dedicated EC2 Port Allocation (Conflict-Free alongside Mexpo & JHIC):
@@ -11,8 +11,10 @@
 #   - Hijauin Redis:    6380 (JHIC=6379)
 #
 # Required GitHub Actions Secrets:
-#   AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY   — IAM credentials with ECR push permissions
+#   AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY   — IAM credentials with ECR and S3 permissions
 #   AWS_REGION                                   — e.g. ap-southeast-2 or ap-southeast-1
+#   AWS_BUCKET                                   — S3 Bucket name for file uploads
+#   AWS_ENDPOINT / AWS_URL                       — S3 Endpoint / CDN Base URL (optional)
 #   ECR_BACKEND_IMAGE                            — Backend ECR Repository URI
 #   ECR_FRONTEND_IMAGE                           — Frontend ECR Repository URI
 #   EC2_HOST / EC2_USER / EC2_SSH_KEY            — Target EC2 instance SSH configuration
@@ -21,8 +23,6 @@
 #   REDIS_PASSWORD                               — Redis Cache password (optional)
 #   CORS_ORIGIN / FRONTEND_URL                   — Allowed frontend origins
 #   NEXT_PUBLIC_API_URL                          — Public API endpoint for frontend client
-#   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME            — Cloudinary cloud name
-#   NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET         — Cloudinary upload preset
 #   NEXT_PUBLIC_GOOGLE_CLIENT_ID                 — Google OAuth Client ID
 
 name: Deploy Hijauin to EC2
@@ -112,8 +112,6 @@ jobs:
         working-directory: ./hijauin-frontend
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api' }}
-          NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: ${{ secrets.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'hijauin-app' }}
-          NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: ${{ secrets.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'hijauin_preset' }}
           NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '' }}
         run: npm run build
 
@@ -164,8 +162,6 @@ jobs:
           push: true
           build-args: |
             NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api' }}
-            NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=${{ secrets.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'hijauin-app' }}
-            NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=${{ secrets.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'hijauin_preset' }}
             NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '' }}
           tags: |
             ${{ secrets.ECR_FRONTEND_IMAGE }}:latest
@@ -256,7 +252,7 @@ jobs:
             APP_DEBUG=${{ secrets.APP_DEBUG || 'false' }}
             APP_URL="${{ secrets.APP_URL || 'http://localhost:5001' }}"
 
-            # Database Configuration (Internal container uses 'db' on port 5432, exposed on host port 5434)
+            # Database Configuration (PostgreSQL container: hijauin_prod_db on port 5434)
             DB_CONNECTION=pgsql
             DB_HOST=db
             DB_PORT=5432
@@ -265,7 +261,7 @@ jobs:
             DB_PASSWORD="${{ secrets.DB_PASSWORD || '010709Am' }}"
             DB_DATABASE="${{ secrets.DB_DATABASE || 'hijauin_backend' }}"
 
-            # Redis Cache Configuration (Internal container uses 'redis' on port 6379, exposed on host port 6380)
+            # Redis Cache Configuration (Redis container: hijauin_prod_redis on port 6380)
             CACHE_STORE=redis
             REDIS_CLIENT=phpredis
             REDIS_HOST=redis
@@ -275,11 +271,15 @@ jobs:
             SESSION_DRIVER=redis
             QUEUE_CONNECTION=redis
 
-            # Cloudinary Configuration
-            CLOUDINARY_CLOUD_NAME="${{ secrets.CLOUDINARY_CLOUD_NAME || secrets.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'hijauin-app' }}"
-            CLOUDINARY_API_KEY="${{ secrets.CLOUDINARY_API_KEY || '' }}"
-            CLOUDINARY_API_SECRET="${{ secrets.CLOUDINARY_API_SECRET || '' }}"
-            CLOUDINARY_URL="${{ secrets.CLOUDINARY_URL || '' }}"
+            # AWS S3 Storage Configuration
+            FILESYSTEM_DISK=s3
+            AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}"
+            AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+            AWS_DEFAULT_REGION="${{ secrets.AWS_REGION || 'ap-southeast-2' }}"
+            AWS_BUCKET="${{ secrets.AWS_BUCKET || 'hijauin-storage' }}"
+            AWS_ENDPOINT="${{ secrets.AWS_ENDPOINT || '' }}"
+            AWS_URL="${{ secrets.AWS_URL || '' }}"
+            AWS_USE_PATH_STYLE_ENDPOINT=${{ secrets.AWS_USE_PATH_STYLE_ENDPOINT || 'false' }}
 
             # Backend & Frontend Networking
             BACKEND_PORT=${{ secrets.BACKEND_PORT || '5001' }}
@@ -290,8 +290,6 @@ jobs:
 
             # Frontend Client Environment
             NEXT_PUBLIC_API_URL="${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api' }}"
-            NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="${{ secrets.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'hijauin-app' }}"
-            NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET="${{ secrets.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'hijauin_preset' }}"
             NEXT_PUBLIC_GOOGLE_CLIENT_ID="${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '' }}"
             EOF
 

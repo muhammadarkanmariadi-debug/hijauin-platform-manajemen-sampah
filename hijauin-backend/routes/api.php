@@ -43,6 +43,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
+    // S3 Storage Upload
+    Route::post('/upload', [\App\Http\Controllers\UploadController::class, 'upload']);
+
     // ── Nasabah ─────────────────────────────────────────
     Route::middleware('unit.scope')
         ->prefix('nasabah')
