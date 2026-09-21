@@ -211,6 +211,7 @@ export default function AdminHadiahsPage() {
                             src={h.foto_url}
                             alt={h.nama}
                             fill
+                            unoptimized
                             className="object-cover"
                           />
                         ) : (

@@ -241,11 +241,11 @@ export default function AdminNasabahsPage() {
 
                       <td className="px-5 py-3.5 text-right">
                         <span className="inline-flex items-center gap-1 font-mono font-bold text-sm text-[#1F6B3F] bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                          {profile.saldo_poin.toLocaleString('id-ID')}
+                          {Number(profile.saldo_poin ?? 0).toLocaleString('id-ID')}
                           <span className="text-[10px] uppercase font-sans text-emerald-800">poin</span>
                         </span>
                         <p className="text-[10px] text-stone-400 mt-0.5">
-                          ± Rp {profile.saldo_poin.toLocaleString('id-ID')}
+                          ± Rp {Number(profile.saldo_poin ?? 0).toLocaleString('id-ID')}
                         </p>
                       </td>
 

@@ -56,7 +56,7 @@ export default function SetorModal({ isOpen, onClose, onSuccess }: SetorModalPro
         color: getMaterialColor(k.jenis),
         bgColor: `${getMaterialColor(k.jenis)}18`,
       },
-      meta: `Tarif Rp ${k.harga_per_kg.toLocaleString('id-ID')}/kg • +${k.poin_per_kg} poin/kg`,
+      meta: `Tarif Rp ${Number(k.harga_per_kg ?? 0).toLocaleString('id-ID')}/kg • +${k.poin_per_kg ?? 0} poin/kg`,
     }));
   }, [kategoris]);
 
@@ -287,7 +287,7 @@ export default function SetorModal({ isOpen, onClose, onSuccess }: SetorModalPro
                           {selectedCat && (
                             <p className="text-[11px] text-[#7C8574]">
                               {selectedCat.deskripsi || 'Kategori terstandarisasi'} • Tarif Rp{' '}
-                              {selectedCat.harga_per_kg.toLocaleString('id-ID')}/kg
+                              {Number(selectedCat.harga_per_kg ?? 0).toLocaleString('id-ID')}/kg
                             </p>
                           )}
                         </div>
@@ -312,7 +312,7 @@ export default function SetorModal({ isOpen, onClose, onSuccess }: SetorModalPro
                         +{estimatedTotals.poin} Poin
                       </span>
                       <p className="text-[11px] text-stone-500">
-                        ≈ Rp {estimatedTotals.rupiah.toLocaleString('id-ID')}
+                        ≈ Rp {Number(estimatedTotals.rupiah ?? 0).toLocaleString('id-ID')}
                       </p>
                     </div>
                   </div>

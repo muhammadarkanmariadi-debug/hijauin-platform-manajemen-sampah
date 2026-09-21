@@ -281,6 +281,7 @@ export default function AdminKategorisPage() {
                             src={k.foto_url}
                             alt={k.nama}
                             fill
+                            unoptimized
                             className="object-cover"
                           />
                         ) : (
@@ -308,10 +309,10 @@ export default function AdminKategorisPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3 text-right font-medium text-stone-900 whitespace-nowrap">
-                      Rp {k.harga_per_kg.toLocaleString('id-ID')}
+                      Rp {Number(k.harga_per_kg ?? 0).toLocaleString('id-ID')}
                     </td>
                     <td className="px-5 py-3 text-right font-display font-semibold text-[#0B3D26] whitespace-nowrap">
-                      +{k.poin_per_kg} Poin
+                      +{Number(k.poin_per_kg ?? 0)} Poin
                     </td>
                     <td className="px-5 py-3 text-right whitespace-nowrap">
                       <button
