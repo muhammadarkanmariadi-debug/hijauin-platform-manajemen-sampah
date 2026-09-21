@@ -78,6 +78,7 @@ jobs:
         working-directory: ./hijauin-backend
         env:
           APP_ENV: testing
+          APP_KEY: base64:qaWuRpZlHrjkG6GMgmuVTnQqvaqSw17fIINYp+aIKiE=
           DB_CONNECTION: sqlite
           DB_DATABASE: ":memory:"
           CACHE_STORE: array
@@ -93,10 +94,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: "npm"
           cache-dependency-path: hijauin-frontend/package-lock.json
 
