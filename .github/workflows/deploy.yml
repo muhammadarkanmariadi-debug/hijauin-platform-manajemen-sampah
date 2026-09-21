@@ -78,11 +78,12 @@ jobs:
         working-directory: ./hijauin-backend
         env:
           APP_ENV: testing
-          APP_KEY: base64:qaWuRpZlHrjkG6GMgmuVTnQqvaqSw17fIINYp+aIKiE=
           DB_CONNECTION: sqlite
           DB_DATABASE: ":memory:"
           CACHE_STORE: array
-        run: php artisan test
+        run: |
+          php artisan key:generate
+          php artisan test
 
   # ----------------------------------------------------------------------------
   # Job 2: Frontend CI (Node / ESLint / Next.js Build)
