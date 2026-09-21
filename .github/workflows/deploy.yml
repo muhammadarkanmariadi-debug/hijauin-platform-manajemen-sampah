@@ -1,7 +1,7 @@
 # Deploy Hijauin 2.0 to EC2 (Docker + Amazon ECR)
 #
 # Monorepo architecture:
-#   - hijauin-backend: Laravel 13 + PHP 8.3 + PostgreSQL + Redis + AWS S3 Storage
+#   - hijauin-backend: Laravel 13 + PHP 8.4 + PostgreSQL + Redis + AWS S3 Storage
 #   - hijauin-frontend: Next.js 16 + Tailwind CSS + TanStack Query
 #
 # Dedicated EC2 Port Allocation (Conflict-Free alongside Mexpo & JHIC):
@@ -56,10 +56,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup PHP 8.3
+      - name: Setup PHP 8.4
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.3"
+          php-version: "8.4"
           extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_pgsql, pgsql, redis, bcmath
           coverage: none
 
