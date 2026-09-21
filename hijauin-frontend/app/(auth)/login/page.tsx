@@ -63,11 +63,12 @@ export default function LoginPage() {
         <GoogleAuthButton mode="login" />
 
         {/* Hairline Divider */}
-        <div className="relative flex items-center justify-center py-2">
-          <div className="w-full border-t border-stone-200" />
-          <span className="relative bg-[#FAF8F5] px-3 text-xs text-[#7C8574] font-medium uppercase tracking-wider">
+        <div className="flex items-center gap-3 py-2">
+          <div className="h-px flex-1 bg-stone-200" />
+          <span className="text-xs text-[#7C8574] font-medium uppercase tracking-wider whitespace-nowrap">
             atau gunakan email
           </span>
+          <div className="h-px flex-1 bg-stone-200" />
         </div>
       </div>
 
