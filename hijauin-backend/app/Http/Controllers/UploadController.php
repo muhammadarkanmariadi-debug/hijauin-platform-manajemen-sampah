@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -32,18 +31,6 @@ class UploadController extends Controller
         $disk = $hasS3Config ? 's3' : 'public';
 
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-        $startTime = microtime(true);
-
-        Log::info('[Storage::Upload] 🚀 Memulai proses upload file', [
-            'original_name' => $file->getClientOriginalName(),
-            'target_folder' => $folder,
-            'generated_filename' => $filename,
-            'target_disk' => $disk,
-            'file_size_bytes' => $file->getSize(),
-            'mime_type' => $file->getMimeType(),
-            's3_configured' => $hasS3Config,
-            's3_bucket' => $bucket,
-        ]);
 
         try {
             // Do not pass 'visibility' => 'public' for S3 because modern S3 buckets disable ACLs
@@ -63,29 +50,9 @@ class UploadController extends Controller
                 $url = "https://{$bucket}.s3.{$region}.amazonaws.com/" . ltrim($path, '/');
             }
 
-            $durationMs = round((microtime(true) - $startTime) * 1000, 2);
-
-            Log::info("[Storage::Upload] ✅ Upload ke [{$disk}] BERHASIL", [
-                'disk' => $disk,
-                'bucket' => $disk === 's3' ? $bucket : null,
-                'path' => $path,
-                'public_url' => $url,
-                'duration_ms' => $durationMs,
-            ]);
-
         } catch (\Throwable $e) {
-            $durationMs = round((microtime(true) - $startTime) * 1000, 2);
-
-            Log::warning("[Storage::Upload] ⚠️ Upload ke [{$disk}] GAGAL ({$durationMs}ms): {$e->getMessage()}", [
-                'disk' => $disk,
-                'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ]);
-
             // Fallback to local public disk if S3 fails
             if ($disk === 's3') {
-                Log::info('[Storage::Upload] 🔄 Mencoba fallback otomatis ke disk lokal [public]...');
                 try {
                     $disk = 'public';
                     $path = $file->storeAs($folder, $filename, [
@@ -93,13 +60,7 @@ class UploadController extends Controller
                         'visibility' => 'public',
                     ]);
                     $url = Storage::disk('public')->url($path);
-
-                    Log::info('[Storage::Upload] ✅ Fallback ke disk lokal [public] BERHASIL', [
-                        'path' => $path,
-                        'public_url' => $url,
-                    ]);
                 } catch (\Throwable $fallbackErr) {
-                    Log::error('[Storage::Upload] ❌ Fallback ke disk lokal juga GAGAL: ' . $fallbackErr->getMessage());
                     return $this->errorResponse('Gagal mengunggah file: ' . $fallbackErr->getMessage(), 500);
                 }
             } else {
