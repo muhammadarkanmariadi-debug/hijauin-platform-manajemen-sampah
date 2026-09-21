@@ -62,7 +62,7 @@ class KategoriController extends Controller
             $kategoris = $query->paginate($pageSize);
 
             return [
-                'data' => $kategoris->items(),
+                'data' => $kategoris->getCollection()->toArray(),
                 'meta' => [
                     'page' => $kategoris->currentPage(),
                     'pageSize' => $kategoris->perPage(),

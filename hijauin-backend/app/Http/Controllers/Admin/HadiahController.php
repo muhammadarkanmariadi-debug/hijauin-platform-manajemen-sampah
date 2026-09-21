@@ -64,7 +64,7 @@ class HadiahController extends Controller
             $hadiahs = $query->paginate($pageSize);
 
             return [
-                'data' => $hadiahs->items(),
+                'data' => $hadiahs->getCollection()->toArray(),
                 'meta' => [
                     'page' => $hadiahs->currentPage(),
                     'pageSize' => $hadiahs->perPage(),
