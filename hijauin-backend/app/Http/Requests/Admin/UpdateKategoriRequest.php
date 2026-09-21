@@ -19,6 +19,7 @@ class UpdateKategoriRequest extends FormRequest
             'harga_per_kg' => 'sometimes|numeric|min:0',
             'poin_per_kg' => 'sometimes|integer|min:0',
             'deskripsi' => 'sometimes|nullable|string',
+            'foto_url' => 'sometimes|nullable|string|max:2048',
         ];
     }
 }

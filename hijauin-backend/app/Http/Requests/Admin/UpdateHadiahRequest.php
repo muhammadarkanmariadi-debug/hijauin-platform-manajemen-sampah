@@ -18,6 +18,7 @@ class UpdateHadiahRequest extends FormRequest
             'deskripsi' => 'sometimes|nullable|string',
             'poin_diperlukan' => 'sometimes|integer|min:1',
             'stok' => 'sometimes|integer|min:0',
+            'foto_url' => 'sometimes|nullable|string|max:2048',
         ];
     }
 }

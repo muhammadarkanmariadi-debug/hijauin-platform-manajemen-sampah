@@ -19,6 +19,7 @@ class StoreKategoriRequest extends FormRequest
             'harga_per_kg' => 'required|numeric|min:0',
             'poin_per_kg' => 'required|integer|min:0',
             'deskripsi' => 'nullable|string',
+            'foto_url' => 'nullable|string|max:2048',
         ];
     }
 }

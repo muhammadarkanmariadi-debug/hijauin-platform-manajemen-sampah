@@ -18,6 +18,7 @@ class StoreHadiahRequest extends FormRequest
             'deskripsi' => 'nullable|string',
             'poin_diperlukan' => 'required|integer|min:1',
             'stok' => 'required|integer|min:0',
+            'foto_url' => 'nullable|string|max:2048',
         ];
     }
 }
