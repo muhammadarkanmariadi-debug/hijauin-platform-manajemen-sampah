@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useMe, useUnits, useUpdateProfile } from '@/lib/queries/auth.queries';
 import { useAuthStore, getDefaultDashboard } from '@/lib/auth';
@@ -18,19 +17,16 @@ export default function OnboardingPage() {
 
   const currentUser = meUser || authUser;
 
-  const [selectedUnitId, setSelectedUnitId] = useState<number | undefined>(
-    currentUser?.nasabah_profile?.unit_id || currentUser?.user_roles?.[0]?.unit_id || undefined
-  );
+  const [selectedUnitId, setSelectedUnitId] = useState<number | undefined>(undefined);
   const [phone, setPhone] = useState(currentUser?.phone || '');
   const [alamat, setAlamat] = useState(currentUser?.nasabah_profile?.alamat || '');
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Pre-fill initial unit when available
-  useEffect(() => {
-    if (!selectedUnitId && units.length > 0) {
-      setSelectedUnitId(units[0].id);
-    }
-  }, [units, selectedUnitId]);
+  const effectiveUnitId =
+    selectedUnitId ??
+    currentUser?.nasabah_profile?.unit_id ??
+    currentUser?.user_roles?.[0]?.unit_id ??
+    (units.length > 0 ? units[0].id : undefined);
 
   // Transform units to rich Combobox options
   const unitOptions: ComboboxOption[] = useMemo(() => {
@@ -47,21 +43,21 @@ export default function OnboardingPage() {
   }, [units]);
 
   const selectedUnit = useMemo(() => {
-    return units.find((u) => u.id === selectedUnitId);
-  }, [units, selectedUnitId]);
+    return units.find((u) => u.id === effectiveUnitId);
+  }, [units, effectiveUnitId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
 
-    if (!selectedUnitId) {
+    if (!effectiveUnitId) {
       setErrorMessage('Silakan pilih salah satu Unit Bank Sampah terdekat.');
       return;
     }
 
     try {
       await updateProfileMutation.mutateAsync({
-        unit_id: Number(selectedUnitId),
+        unit_id: Number(effectiveUnitId),
         phone: phone.trim() || undefined,
         alamat: alamat.trim() || undefined,
       });
@@ -164,7 +160,7 @@ export default function OnboardingPage() {
           ) : (
             <Combobox
               options={unitOptions}
-              value={selectedUnitId ?? ''}
+              value={effectiveUnitId ?? ''}
               onChange={(val) => setSelectedUnitId(val ? Number(val) : undefined)}
               placeholder="Cari atau pilih unit bank sampah..."
               searchPlaceholder="Ketik nama unit atau alamat cabang..."
@@ -217,7 +213,7 @@ export default function OnboardingPage() {
         <div className="space-y-2.5 pt-2">
           <button
             type="submit"
-            disabled={updateProfileMutation.isPending || !selectedUnitId}
+            disabled={updateProfileMutation.isPending || !effectiveUnitId}
             className="w-full rounded-[4px] bg-[#0B3D26] py-3 px-4 text-sm font-medium text-white shadow-sm hover:bg-[#1F6B3F] active:translate-y-0.5 transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
           >
             {updateProfileMutation.isPending ? (

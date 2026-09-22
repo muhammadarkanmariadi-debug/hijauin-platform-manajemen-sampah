@@ -10,8 +10,8 @@ export interface ImportColumn<T> {
   type?: 'text' | 'number' | 'select';
   options?: { value: string; label: string }[];
   required?: boolean;
-  defaultValue?: any;
-  validate?: (val: any, row: T) => string | null;
+  defaultValue?: unknown;
+  validate?: (val: unknown, row: T) => string | null;
   sample: string | number;
 }
 
@@ -33,7 +33,7 @@ interface DataImportModalProps<T> {
   onConfirmImport: (items: T[]) => Promise<void>;
 }
 
-export default function DataImportModal<T extends Record<string, any>>({
+export default function DataImportModal<T extends Record<string, unknown>>({
   isOpen,
   onClose,
   title,
@@ -80,7 +80,7 @@ export default function DataImportModal<T extends Record<string, any>>({
 
       // Map parsed columns to our schema
       const mappedRows: StagedRow<T>[] = parsed.rows.map((rawRow, idx) => {
-        const item: Record<string, any> = {};
+        const item: Record<string, unknown> = {};
 
         columns.forEach((col) => {
           // Look for exact label match or key match (case-insensitive)
@@ -127,7 +127,7 @@ export default function DataImportModal<T extends Record<string, any>>({
     setStagedRows((prev) => prev.map((r) => ({ ...r, selected: !areAllSelected })));
   };
 
-  const handleCellChange = (id: string, key: keyof T, value: any) => {
+  const handleCellChange = (id: string, key: keyof T, value: unknown) => {
     setStagedRows((prev) =>
       prev.map((r) => {
         if (r.id !== id) return r;
@@ -146,7 +146,7 @@ export default function DataImportModal<T extends Record<string, any>>({
   };
 
   const handleAddManualRow = () => {
-    const emptyItem: Record<string, any> = {};
+    const emptyItem: Record<string, unknown> = {};
     columns.forEach((col) => {
       emptyItem[col.key as string] = col.defaultValue ?? (col.type === 'number' ? 0 : '');
     });
@@ -457,7 +457,7 @@ export default function DataImportModal<T extends Record<string, any>>({
                                       ) : (
                                         <input
                                           type={col.type === 'number' ? 'number' : 'text'}
-                                          value={cellValue ?? ''}
+                                          value={(cellValue as string | number | undefined) ?? ''}
                                           disabled={!row.selected}
                                           onChange={(e) =>
                                             handleCellChange(
