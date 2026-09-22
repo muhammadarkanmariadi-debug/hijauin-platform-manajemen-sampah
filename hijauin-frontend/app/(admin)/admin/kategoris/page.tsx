@@ -3,13 +3,21 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAdminKategoris, useCreateKategori, useDeleteKategori } from '@/lib/queries/admin.queries';
+import {
+  useAdminKategoris,
+  useCreateKategori,
+  useBulkCreateKategori,
+  useDeleteKategori,
+} from '@/lib/queries/admin.queries';
 import { DataTableToolbar } from '@/components/common/DataTableToolbar';
 import { Pagination } from '@/components/ui/Pagination';
 import CloudinaryImageUpload from '@/components/common/CloudinaryImageUpload';
 import Combobox, { type ComboboxOption } from '@/components/common/Combobox';
 import RupiahInput from '@/components/ui/RupiahInput';
-import type { JenisSampah } from '@/lib/types';
+import DataImportModal, { type ImportColumn } from '@/components/common/DataImportModal';
+import { exportToCsv, exportToExcel } from '@/lib/utils/export.utils';
+import type { KategoriSampah, JenisSampah } from '@/lib/types';
+import type { KategoriInput } from '@/lib/schemas/admin.schema';
 
 const MATERIAL_OPTIONS: ComboboxOption[] = [
   {
@@ -73,6 +81,61 @@ const SORT_OPTIONS = [
   { value: 'created_at', label: 'Tanggal Dibuat' },
 ];
 
+const IMPORT_COLUMNS: ImportColumn<KategoriInput>[] = [
+  {
+    key: 'nama',
+    label: 'Nama Kategori',
+    type: 'text',
+    required: true,
+    sample: 'Botol Plastik PET Bersih',
+  },
+  {
+    key: 'jenis',
+    label: 'Jenis Material',
+    type: 'select',
+    required: true,
+    defaultValue: 'plastik',
+    options: [
+      { value: 'plastik', label: 'Plastik' },
+      { value: 'kertas', label: 'Kertas' },
+      { value: 'logam', label: 'Logam' },
+      { value: 'kaca', label: 'Kaca' },
+    ],
+    sample: 'plastik',
+  },
+  {
+    key: 'harga_per_kg',
+    label: 'Harga per kg (Rp)',
+    type: 'number',
+    required: true,
+    defaultValue: 3000,
+    validate: (val) => (Number(val) < 0 ? 'Harga tidak boleh negatif.' : null),
+    sample: 4500,
+  },
+  {
+    key: 'poin_per_kg',
+    label: 'Poin per kg',
+    type: 'number',
+    required: true,
+    defaultValue: 30,
+    validate: (val) => (Number(val) < 0 ? 'Poin tidak boleh negatif.' : null),
+    sample: 45,
+  },
+  {
+    key: 'deskripsi',
+    label: 'Deskripsi',
+    type: 'text',
+    sample: 'Botol air mineral transparan tanpa tutup dan label',
+  },
+];
+
+const SAMPLE_IMPORT_ROWS = [
+  ['Botol Plastik PET Bersih', 'plastik', 4500, 45, 'Botol air mineral transparan tanpa label'],
+  ['Kardus & Karton Dupleks', 'kertas', 2500, 25, 'Kardus cokelat kemasan kering terlipat rapi'],
+  ['Kaleng Aluminium Minuman', 'logam', 14000, 140, 'Kaleng minuman ringan soda dan larutan'],
+  ['Botol Beling Utuh', 'kaca', 1500, 15, 'Botol kecap, sirup, atau marjan utuh tanpa retak'],
+];
+
 export default function AdminKategorisPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
@@ -81,6 +144,7 @@ export default function AdminKategorisPage() {
   const [sortBy, setSortBy] = useState('nama');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   // Form states
   const [nama, setNama] = useState('');
@@ -99,11 +163,46 @@ export default function AdminKategorisPage() {
     sortBy,
     sortDir,
   });
-  const createKategori = useCreateKategori();
-  const deleteKategori = useDeleteKategori();
 
-  const kategoris = kategorisData?.data ?? [];
+  const createKategoriMutation = useCreateKategori();
+  const bulkCreateKategoriMutation = useBulkCreateKategori();
+  const deleteKategoriMutation = useDeleteKategori();
+
+  const kategoris: KategoriSampah[] = kategorisData?.data ?? [];
   const meta = kategorisData?.meta;
+
+  const handleExportCsv = () => {
+    const headers = ['Nama Kategori', 'Jenis', 'Harga / kg (Rp)', 'Poin / kg', 'Deskripsi'];
+    const rows = kategoris.map((k) => [
+      k.nama,
+      k.jenis,
+      k.harga_per_kg,
+      k.poin_per_kg,
+      k.deskripsi || '',
+    ]);
+    exportToCsv(`kategori_sampah_${new Date().toISOString().split('T')[0]}`, headers, rows);
+  };
+
+  const handleExportExcel = () => {
+    const headers = ['Nama Kategori', 'Jenis', 'Harga / kg (Rp)', 'Poin / kg', 'Deskripsi'];
+    const rows = kategoris.map((k) => [
+      k.nama,
+      k.jenis,
+      k.harga_per_kg,
+      k.poin_per_kg,
+      k.deskripsi || '',
+    ]);
+    exportToExcel(
+      `kategori_sampah_${new Date().toISOString().split('T')[0]}`,
+      'Kategori Sampah',
+      headers,
+      rows
+    );
+  };
+
+  const handleBulkImportConfirm = async (items: KategoriInput[]) => {
+    await bulkCreateKategoriMutation.mutateAsync(items);
+  };
 
   const handleSearchChange = (val: string) => {
     setSearch(val);
@@ -141,7 +240,7 @@ export default function AdminKategorisPage() {
     setErrorMsg('');
 
     try {
-      await createKategori.mutateAsync({
+      await createKategoriMutation.mutateAsync({
         nama: nama.trim(),
         jenis,
         harga_per_kg: parseFloat(hargaPerKg),
@@ -168,7 +267,7 @@ export default function AdminKategorisPage() {
 
   const handleDelete = async (id: number) => {
     if (confirm('Yakin ingin menghapus kategori sampah ini?')) {
-      await deleteKategori.mutateAsync(id);
+      await deleteKategoriMutation.mutateAsync(id);
     }
   };
 
@@ -204,16 +303,57 @@ export default function AdminKategorisPage() {
           </h1>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[4px] bg-[#0B3D26] hover:bg-[#1F6B3F] text-[#F1ECDF] text-xs font-semibold tracking-wide transition-all shadow-sm"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Tambah Kategori Baru
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Export Actions */}
+          <div className="flex items-center rounded-[4px] border border-stone-300 bg-white overflow-hidden shadow-2xs">
+            <button
+              type="button"
+              onClick={handleExportCsv}
+              className="px-3 py-2 text-xs font-medium text-stone-700 hover:bg-stone-50 border-r border-stone-200 flex items-center gap-1.5 transition-colors"
+              title="Ekspor ke format CSV"
+            >
+              <svg className="w-3.5 h-3.5 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Ekspor CSV
+            </button>
+            <button
+              type="button"
+              onClick={handleExportExcel}
+              className="px-3 py-2 text-xs font-medium text-[#1F6B3F] hover:bg-[#1F6B3F]/5 flex items-center gap-1.5 transition-colors"
+              title="Ekspor ke format Excel (.xlsx)"
+            >
+              <svg className="w-3.5 h-3.5 text-[#1F6B3F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Excel
+            </button>
+          </div>
+
+          {/* Import Batch Action */}
+          <button
+            type="button"
+            onClick={() => setIsImportModalOpen(true)}
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-[4px] border border-stone-300 hover:border-stone-400 bg-white text-stone-800 text-xs font-semibold tracking-wide transition-all shadow-2xs"
+          >
+            <svg className="w-4 h-4 text-[#1F6B3F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l4-4m0 0l4 4m-4-4v12" />
+            </svg>
+            Impor CSV / XLSX
+          </button>
+
+          {/* Add New Single Category */}
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[4px] bg-[#0B3D26] hover:bg-[#1F6B3F] text-[#F1ECDF] text-xs font-semibold tracking-wide transition-all shadow-sm"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Tambah Kategori
+          </button>
+        </div>
       </div>
 
       {/* Search, Filter & Sort Toolbar */}
@@ -455,10 +595,10 @@ export default function AdminKategorisPage() {
                   </button>
                   <button
                     type="submit"
-                    disabled={createKategori.isPending}
+                    disabled={createKategoriMutation.isPending}
                     className="px-5 py-2 rounded-[4px] bg-[#0B3D26] hover:bg-[#1F6B3F] text-white text-xs font-semibold disabled:opacity-50"
                   >
-                    {createKategori.isPending ? 'Menyimpan...' : 'Simpan Kategori'}
+                    {createKategoriMutation.isPending ? 'Menyimpan...' : 'Simpan Kategori'}
                   </button>
                 </div>
               </form>
@@ -466,6 +606,18 @@ export default function AdminKategorisPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Batch Import Staging Modal */}
+      <DataImportModal<KategoriInput>
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        title="Impor Kategori Sampah dari Spreadsheet"
+        description="Unggah file CSV atau Excel, pilih, edit, atau eliminasi baris data sebelum disimpan ke unit bank sampah."
+        columns={IMPORT_COLUMNS}
+        templateFilename="template_kategori_sampah"
+        sampleRows={SAMPLE_IMPORT_ROWS}
+        onConfirmImport={handleBulkImportConfirm}
+      />
     </div>
   );
 }

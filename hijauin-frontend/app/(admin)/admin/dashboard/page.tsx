@@ -667,7 +667,7 @@ export default function AdminDashboard() {
                         </div>
 
                         <Link
-                          href={`/admin/setorans/${setoran.id}/verify`}
+                          href={`/admin/setorans?verifyId=${setoran.id}`}
                           className="rounded-[4px] bg-[#0B3D26] px-3.5 py-1.5 text-xs font-medium text-white hover:bg-[#1F6B3F] active:translate-y-0.5 transition-colors shadow-xs"
                         >
                           Timbang Sekarang

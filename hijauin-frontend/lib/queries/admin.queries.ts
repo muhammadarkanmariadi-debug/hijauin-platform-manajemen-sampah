@@ -124,6 +124,17 @@ export function useCreateKategori() {
   });
 }
 
+export function useBulkCreateKategori() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (items: KategoriInput[]) => {
+      const { data } = await api.post('/admin/kategoris/bulk', { items });
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'kategoris'] }),
+  });
+}
+
 export function useDeleteKategori() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -165,6 +176,17 @@ export function useCreateHadiah() {
   return useMutation({
     mutationFn: async (input: HadiahInput) => {
       const { data } = await api.post('/admin/hadiahs', input);
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'hadiahs'] }),
+  });
+}
+
+export function useBulkCreateHadiah() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (items: HadiahInput[]) => {
+      const { data } = await api.post('/admin/hadiahs/bulk', { items });
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'hadiahs'] }),

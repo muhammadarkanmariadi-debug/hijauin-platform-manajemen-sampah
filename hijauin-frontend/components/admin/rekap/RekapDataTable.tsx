@@ -26,6 +26,14 @@ export function RekapDataTable({
     }).format(num);
   };
 
+  const safeBreakdown: RekapBreakdown[] = (
+    Array.isArray(breakdown)
+      ? breakdown
+      : breakdown && typeof breakdown === 'object'
+        ? Object.values(breakdown)
+        : []
+  ) as RekapBreakdown[];
+
   return (
     <div className="rounded-[4px] border border-stone-200 bg-white shadow-xs overflow-hidden">
       <div className="p-5 border-b border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -61,14 +69,14 @@ export function RekapDataTable({
                   Memuat data rincian material...
                 </td>
               </tr>
-            ) : breakdown.length === 0 ? (
+            ) : safeBreakdown.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-5 py-8 text-center text-stone-500">
                   Tidak ada data material untuk periode yang dipilih.
                 </td>
               </tr>
             ) : (
-              breakdown.map((item) => {
+              safeBreakdown.map((item) => {
                 const percent = totalKg > 0 ? (item.total_kg / totalKg) * 100 : 0;
                 const color = JENIS_SAMPAH_COLORS[item.jenis] || '#0B3D26';
                 const label = JENIS_SAMPAH_LABELS[item.jenis] || item.jenis;

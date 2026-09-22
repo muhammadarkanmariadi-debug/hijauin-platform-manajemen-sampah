@@ -91,6 +91,9 @@ export const RupiahInput = forwardRef<HTMLInputElement, RupiahInputProps>(
       let numericValue = onlyDigits ? parseInt(onlyDigits, 10) : 0;
 
       // Handle limit min & max jika ada
+      if (min !== undefined && numericValue < Number(min)) {
+        numericValue = Number(min);
+      }
       if (max !== undefined && numericValue > Number(max)) {
         numericValue = Number(max);
       }

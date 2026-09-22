@@ -69,9 +69,12 @@ export function useSetoran(id: number) {
 export function useKategoris() {
   return useQuery({
     queryKey: ['kategoris'],
-    queryFn: async () => {
-      const { data } = await api.get<{ data: import('../types').KategoriSampah[] }>('/nasabah/kategoris');
-      return data.data;
+    queryFn: async (): Promise<import('../types').KategoriSampah[]> => {
+      const res = await api.get('/nasabah/kategoris');
+      const payload = res.data;
+      if (Array.isArray(payload)) return payload;
+      if (Array.isArray(payload?.data)) return payload.data;
+      return [];
     },
   });
 }

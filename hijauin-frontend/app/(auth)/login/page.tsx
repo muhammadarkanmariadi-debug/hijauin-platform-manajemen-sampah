@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { loginSchema, type LoginInput } from '@/lib/schemas/auth.schema';
 import { useLogin } from '@/lib/queries/auth.queries';
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 import { useAuthStore, getDefaultDashboard } from '@/lib/auth';
 
@@ -104,29 +105,14 @@ export default function LoginPage() {
           )}
         </div>
 
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <label
-              htmlFor="password"
-              className="block text-xs font-semibold text-stone-800"
-            >
-              Password
-            </label>
-          </div>
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            {...register('password')}
-            placeholder="••••••••"
-            className={`w-full rounded-[4px] border bg-white px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-[#0B3D26] focus:outline-none focus:ring-1 focus:ring-[#0B3D26] transition-colors ${
-              errors.password ? 'border-[#C1441F]' : 'border-stone-300'
-            }`}
-          />
-          {errors.password && (
-            <p className="text-xs text-[#C1441F]">{errors.password.message}</p>
-          )}
-        </div>
+        <PasswordInput
+          id="password"
+          label="Password"
+          autoComplete="current-password"
+          placeholder="••••••••"
+          error={errors.password?.message}
+          {...register('password')}
+        />
 
         <button
           type="submit"

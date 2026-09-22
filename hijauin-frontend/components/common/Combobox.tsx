@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export interface ComboboxOption {
@@ -144,11 +143,11 @@ export default function Combobox({
               {/* Selected Image / Swatch */}
               {selectedOption.image ? (
                 <div className="relative w-6 h-6 rounded-[2px] overflow-hidden border border-stone-200 shrink-0 bg-stone-100">
-                  <Image
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={selectedOption.image}
                     alt={selectedOption.label}
-                    fill
-                    className="object-cover"
+                    className="w-full h-full object-cover"
                   />
                 </div>
               ) : selectedOption.badge ? (
@@ -259,11 +258,11 @@ export default function Combobox({
                       {/* Image Thumbnail */}
                       {option.image ? (
                         <div className="relative w-9 h-9 rounded-[3px] overflow-hidden border border-stone-200 shrink-0 bg-stone-100">
-                          <Image
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
                             src={option.image}
                             alt={option.label}
-                            fill
-                            className="object-cover"
+                            className="w-full h-full object-cover"
                           />
                         </div>
                       ) : option.badge ? (

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useKategoris, useCreateSetoran } from '@/lib/queries/setoran.queries';
 import CloudinaryImageUpload from '@/components/common/CloudinaryImageUpload';
 import Combobox, { type ComboboxOption } from '@/components/common/Combobox';
+import type { KategoriSampah } from '@/lib/types';
 
 interface SetorModalProps {
   isOpen: boolean;
@@ -18,8 +19,14 @@ interface ItemRow {
 }
 
 export default function SetorModal({ isOpen, onClose, onSuccess }: SetorModalProps) {
-  const { data: kategoris = [], isLoading: isLoadingKategoris } = useKategoris();
+  const { data: rawKategoris = [], isLoading: isLoadingKategoris } = useKategoris();
   const createSetoranMutation = useCreateSetoran();
+
+  const kategoris: KategoriSampah[] = useMemo(() => {
+    if (Array.isArray(rawKategoris)) return rawKategoris as KategoriSampah[];
+    if (Array.isArray((rawKategoris as { data?: KategoriSampah[] })?.data)) return (rawKategoris as { data: KategoriSampah[] }).data;
+    return [];
+  }, [rawKategoris]);
 
   const [tanggal, setTanggal] = useState(() => new Date().toISOString().split('T')[0]);
   const [catatan, setCatatan] = useState('');
@@ -46,18 +53,21 @@ export default function SetorModal({ isOpen, onClose, onSuccess }: SetorModalPro
   };
 
   const kategoriOptions: ComboboxOption[] = useMemo(() => {
-    return kategoris.map((k) => ({
-      value: k.id,
-      label: k.nama,
-      description: k.deskripsi || undefined,
-      image: k.foto_url,
-      badge: {
-        text: k.jenis.toUpperCase(),
-        color: getMaterialColor(k.jenis),
-        bgColor: `${getMaterialColor(k.jenis)}18`,
-      },
-      meta: `Tarif Rp ${Number(k.harga_per_kg ?? 0).toLocaleString('id-ID')}/kg • +${k.poin_per_kg ?? 0} poin/kg`,
-    }));
+    return (kategoris || []).map((k) => {
+      const jenis = k.jenis || 'plastik';
+      return {
+        value: k.id,
+        label: k.nama || 'Kategori',
+        description: k.deskripsi || undefined,
+        image: k.foto_url,
+        badge: {
+          text: jenis.toUpperCase(),
+          color: getMaterialColor(jenis),
+          bgColor: `${getMaterialColor(jenis)}18`,
+        },
+        meta: `Tarif Rp ${Number(k.harga_per_kg ?? 0).toLocaleString('id-ID')}/kg • +${k.poin_per_kg ?? 0} poin/kg`,
+      };
+    });
   }, [kategoris]);
 
   const handleAddItem = () => {
@@ -192,7 +202,7 @@ export default function SetorModal({ isOpen, onClose, onSuccess }: SetorModalPro
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} noValidate className="space-y-5">
                 {errorMsg && (
                   <div className="p-3 text-xs bg-rose-50 text-rose-800 border border-rose-200 rounded-[4px]">
                     {errorMsg}

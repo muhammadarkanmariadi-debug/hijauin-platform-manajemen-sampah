@@ -14,6 +14,9 @@ import { MonthlyTonnageTrendChart } from '@/components/admin/rekap/MonthlyTonnag
 import { PoinActivityChart } from '@/components/admin/rekap/PoinActivityChart';
 import { RekapDataTable } from '@/components/admin/rekap/RekapDataTable';
 
+import { exportToCsv, exportToExcel } from '@/lib/utils/export.utils';
+import type { RekapBreakdown } from '@/lib/types';
+
 export default function RekapPage() {
   const { user } = useAuthStore();
   const currentRole = getUserRole(user);
@@ -26,7 +29,7 @@ export default function RekapPage() {
   const [allUnits, setAllUnits] = useState<boolean>(isSuperOps);
 
   // Units list for platform superusers
-  const { data: unitsData } = useOpsUnits();
+  const { data: unitsData } = useOpsUnits(isSuperOps);
   const units = useMemo(() => unitsData ?? [], [unitsData]);
 
   // Query live recap data from backend
@@ -41,7 +44,13 @@ export default function RekapPage() {
     isSuperOps ? allUnits : undefined
   );
 
-  const breakdown = rekap?.breakdown ?? [];
+  const breakdown: RekapBreakdown[] = useMemo(() => {
+    const raw = rekap?.breakdown;
+    if (Array.isArray(raw)) return raw as RekapBreakdown[];
+    if (raw && typeof raw === 'object') return Object.values(raw) as RekapBreakdown[];
+    return [];
+  }, [rekap?.breakdown]);
+
   const totals = rekap?.totals;
   const trend = rekap?.trend ?? [];
 
@@ -59,16 +68,7 @@ export default function RekapPage() {
     setSelectedUnitId(unitId);
   };
 
-  // CSV Export utility
-  const handleExportCsv = () => {
-    if (!rekap) return;
-
-    const monthNames = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-    ];
-    const monthLabel = monthNames[selectedMonth - 1] || `${selectedMonth}`;
-
+  const getExportData = () => {
     const headers = [
       'Kategori Material',
       'Kode Jenis',
@@ -81,10 +81,10 @@ export default function RekapPage() {
     const rows = breakdown.map((item) => {
       const percent = totals?.total_kg ? ((item.total_kg / totals.total_kg) * 100).toFixed(2) : '0';
       return [
-        `"${JENIS_SAMPAH_LABELS[item.jenis] || item.jenis}"`,
-        `"${item.jenis}"`,
-        item.total_kg.toFixed(2),
-        `"${percent}%"`,
+        JENIS_SAMPAH_LABELS[item.jenis] || item.jenis,
+        item.jenis,
+        item.total_kg,
+        `${percent}%`,
         item.total_poin,
         item.jumlah_item,
       ];
@@ -92,36 +92,38 @@ export default function RekapPage() {
 
     // Summary row
     rows.push([
-      '"TOTAL"',
-      '""',
-      (totals?.total_kg ?? 0).toFixed(2),
-      '"100.00%"',
+      'TOTAL',
+      '',
+      totals?.total_kg ?? 0,
+      '100.00%',
       totals?.total_poin ?? 0,
       breakdown.reduce((s, b) => s + b.jumlah_item, 0),
     ]);
 
-    const csvContent = [
-      `"LAPORAN REKAPITULASI & NERACA MASSA BANK SAMPAH HIJAUIN"`,
-      `"Unit: ${unitName}"`,
-      `"Periode: ${monthLabel} ${selectedYear}"`,
-      `"Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}"`,
-      '',
-      headers.join(','),
-      ...rows.map((r) => r.join(',')),
-    ].join('\r\n');
+    return { headers, rows };
+  };
 
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute(
-      'download',
-      `rekap_neraca_hijauin_${selectedYear}_${String(selectedMonth).padStart(2, '0')}.csv`
+  // CSV Export utility
+  const handleExportCsv = () => {
+    if (!rekap) return;
+    const { headers, rows } = getExportData();
+    exportToCsv(
+      `rekap_neraca_${selectedYear}_${String(selectedMonth).padStart(2, '0')}`,
+      headers,
+      rows
     );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  };
+
+  // Excel Export utility
+  const handleExportExcel = () => {
+    if (!rekap) return;
+    const { headers, rows } = getExportData();
+    exportToExcel(
+      `rekap_neraca_${selectedYear}_${String(selectedMonth).padStart(2, '0')}`,
+      'Neraca Massa',
+      headers,
+      rows
+    );
   };
 
   const handlePrintPdf = () => {
@@ -184,6 +186,7 @@ export default function RekapPage() {
           allUnits={allUnits}
           onUnitChange={handleUnitChange}
           onExportCsv={handleExportCsv}
+          onExportExcel={handleExportExcel}
           onPrintPdf={handlePrintPdf}
         />
       </div>

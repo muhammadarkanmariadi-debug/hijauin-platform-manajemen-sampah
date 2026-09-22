@@ -1,6 +1,8 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAdminSetorans, useVerifySetoran } from '@/lib/queries/admin.queries';
 import { DataTableToolbar } from '@/components/common/DataTableToolbar';
@@ -22,7 +24,10 @@ const SORT_OPTIONS = [
   { value: 'id', label: 'Nomor Antrean ID' },
 ];
 
-export default function AdminSetoransPage() {
+function AdminSetoransContent() {
+  const searchParams = useSearchParams();
+  const verifyIdParam = searchParams.get('verifyId') || searchParams.get('id');
+
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
   const [search, setSearch] = useState('');
@@ -46,8 +51,30 @@ export default function AdminSetoransPage() {
 
   const verifyMutation = useVerifySetoran();
 
-  const setorans = setoransData?.data ?? [];
+  const setorans = useMemo(() => setoransData?.data ?? [], [setoransData?.data]);
   const meta = setoransData?.meta;
+
+  const openVerifyModal = useCallback((setoran: SetorSampah) => {
+    setSelectedSetoran(setoran);
+    setVerifyError('');
+    // Pre-populate verify items
+    const initialItems = (setoran.details ?? []).map((d) => ({
+      detail_setor_id: d.id,
+      berat_kg_real: d.berat_kg_real ? Number(d.berat_kg_real) : Number(d.berat_kg_estimasi),
+      accepted: true,
+    }));
+    setVerifyItems(initialItems);
+  }, []);
+
+  // Automatically open verify modal if verifyId is passed in URL
+  useEffect(() => {
+    if (verifyIdParam && setorans.length > 0 && !selectedSetoran) {
+      const match = setorans.find((s) => String(s.id) === String(verifyIdParam));
+      if (match) {
+        openVerifyModal(match);
+      }
+    }
+  }, [verifyIdParam, setorans, selectedSetoran, openVerifyModal]);
 
   const handleSearchChange = (val: string) => {
     setSearch(val);
@@ -79,18 +106,6 @@ export default function AdminSetoransPage() {
   };
 
   const hasActiveFilters = search !== '' || statusFilter !== 'all' || sortBy !== 'tanggal' || sortDir !== 'desc';
-
-  const openVerifyModal = (setoran: SetorSampah) => {
-    setSelectedSetoran(setoran);
-    setVerifyError('');
-    // Pre-populate verify items
-    const initialItems = (setoran.details ?? []).map((d) => ({
-      detail_setor_id: d.id,
-      berat_kg_real: d.berat_kg_real ? Number(d.berat_kg_real) : Number(d.berat_kg_estimasi),
-      accepted: true,
-    }));
-    setVerifyItems(initialItems);
-  };
 
   const handleItemWeightChange = (detailId: number, weight: number) => {
     setVerifyItems((prev) =>
@@ -481,5 +496,19 @@ export default function AdminSetoransPage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function AdminSetoransPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center p-12 text-sm text-stone-500">
+          Memuat data setoran...
+        </div>
+      }
+    >
+      <AdminSetoransContent />
+    </Suspense>
   );
 }

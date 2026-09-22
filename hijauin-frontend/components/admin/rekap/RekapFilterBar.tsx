@@ -14,6 +14,7 @@ interface RekapFilterBarProps {
   allUnits: boolean;
   onUnitChange: (unitId: number | undefined, allUnits: boolean) => void;
   onExportCsv: () => void;
+  onExportExcel?: () => void;
   onPrintPdf: () => void;
 }
 
@@ -45,6 +46,7 @@ export function RekapFilterBar({
   allUnits,
   onUnitChange,
   onExportCsv,
+  onExportExcel,
   onPrintPdf,
 }: RekapFilterBarProps) {
   const [isExporting, setIsExporting] = useState(false);
@@ -55,6 +57,12 @@ export function RekapFilterBar({
       onExportCsv();
     } finally {
       setTimeout(() => setIsExporting(false), 800);
+    }
+  };
+
+  const handleExportXlsx = () => {
+    if (onExportExcel) {
+      onExportExcel();
     }
   };
 
@@ -133,7 +141,7 @@ export function RekapFilterBar({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex items-center gap-2 self-end lg:self-auto">
+      <div className="flex flex-wrap items-center gap-2 self-end lg:self-auto">
         <button
           type="button"
           onClick={onPrintPdf}
@@ -146,18 +154,33 @@ export function RekapFilterBar({
           <span>Cetak Ringkasan</span>
         </button>
 
-        <button
-          type="button"
-          onClick={handleExport}
-          disabled={isExporting}
-          className="inline-flex items-center gap-1.5 rounded-[4px] bg-[#0B3D26] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-[#1F6B3F] active:translate-y-0.5 transition-all shadow-xs cursor-pointer disabled:opacity-50"
-          title="Unduh laporan neraca format CSV"
-        >
-          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-          </svg>
-          <span>{isExporting ? 'Mengekspor...' : 'Ekspor CSV'}</span>
-        </button>
+        <div className="flex items-center rounded-[4px] border border-stone-300 bg-white overflow-hidden shadow-2xs">
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={isExporting}
+            className="px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 border-r border-stone-200 flex items-center gap-1.5 transition-colors cursor-pointer"
+            title="Ekspor ke format CSV"
+          >
+            <svg className="w-3.5 h-3.5 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            <span>{isExporting ? 'Mengekspor...' : 'Ekspor CSV'}</span>
+          </button>
+          {onExportExcel && (
+            <button
+              type="button"
+              onClick={handleExportXlsx}
+              className="px-3 py-1.5 text-xs font-medium text-[#1F6B3F] hover:bg-[#1F6B3F]/5 flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Ekspor ke format Excel (.xlsx)"
+            >
+              <svg className="w-3.5 h-3.5 text-[#1F6B3F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>Excel</span>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

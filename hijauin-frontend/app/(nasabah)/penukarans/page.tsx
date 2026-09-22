@@ -52,7 +52,12 @@ export default function PenukaransPage() {
   const [riwayatSortDir, setRiwayatSortDir] = useState<'asc' | 'desc'>('desc');
 
   // Queries
-  const { data: hadiahs = [], isLoading: isLoadingHadiahs, refetch: refetchHadiahs } = useHadiahs();
+  const { data: rawHadiahs = [], isLoading: isLoadingHadiahs, refetch: refetchHadiahs } = useHadiahs();
+  const hadiahs: Hadiah[] = useMemo(() => {
+    if (Array.isArray(rawHadiahs)) return rawHadiahs as Hadiah[];
+    if (Array.isArray((rawHadiahs as { data?: Hadiah[] })?.data)) return (rawHadiahs as { data: Hadiah[] }).data;
+    return [];
+  }, [rawHadiahs]);
   const {
     data: penukaransData,
     isLoading: isLoadingPenukarans,
@@ -70,9 +75,9 @@ export default function PenukaransPage() {
   const meta = penukaransData?.meta;
 
   // Filter & Sort Katalog Hadiah Client-side
-  const filteredHadiahs = useMemo(() => {
+  const filteredHadiahs: Hadiah[] = useMemo(() => {
     return hadiahs
-      .filter((h) => {
+      .filter((h: Hadiah) => {
         const matchesSearch =
           katalogSearch === '' ||
           h.nama.toLowerCase().includes(katalogSearch.toLowerCase()) ||
@@ -85,7 +90,7 @@ export default function PenukaransPage() {
 
         return matchesSearch && matchesAfford;
       })
-      .sort((a, b) => {
+      .sort((a: Hadiah, b: Hadiah) => {
         if (katalogSort === 'poin_asc') return a.poin_diperlukan - b.poin_diperlukan;
         if (katalogSort === 'poin_desc') return b.poin_diperlukan - a.poin_diperlukan;
         if (katalogSort === 'nama_asc') return a.nama.localeCompare(b.nama);

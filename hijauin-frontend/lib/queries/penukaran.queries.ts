@@ -57,9 +57,12 @@ export function usePenukarans(arg1?: number | NasabahPenukaranQueryParams, arg2?
 export function useHadiahs() {
   return useQuery({
     queryKey: ['hadiahs'],
-    queryFn: async () => {
-      const { data } = await api.get<{ data: import('../types').Hadiah[] }>('/nasabah/hadiahs');
-      return data.data;
+    queryFn: async (): Promise<import('../types').Hadiah[]> => {
+      const res = await api.get('/nasabah/hadiahs');
+      const payload = res.data;
+      if (Array.isArray(payload)) return payload;
+      if (Array.isArray(payload?.data)) return payload.data;
+      return [];
     },
   });
 }

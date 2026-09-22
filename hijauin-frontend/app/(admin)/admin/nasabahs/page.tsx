@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAdminNasabahs, useCreateNasabah, useDeleteNasabah } from '@/lib/queries/admin.queries';
 import { DataTableToolbar } from '@/components/common/DataTableToolbar';
 import { Pagination } from '@/components/ui/Pagination';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 const BALANCE_OPTIONS = [
   { value: 'all', label: 'Semua Saldo' },
@@ -341,20 +342,15 @@ export default function AdminNasabahsPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block font-semibold text-stone-700 mb-1">
-                    Password Awal <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    minLength={8}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-[4px] border border-stone-300 px-3 py-2 text-xs text-stone-900 shadow-xs focus:border-[#0B3D26] focus:outline-none focus:ring-1 focus:ring-[#0B3D26]"
-                  />
-                  <p className="text-[10px] text-stone-400 mt-0.5">Minimal 8 karakter.</p>
-                </div>
+                <PasswordInput
+                  label="Password Awal"
+                  required
+                  minLength={8}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Minimal 8 karakter"
+                  helperText="Minimal 8 karakter untuk keamanan akun."
+                />
 
                 <div>
                   <label className="block font-semibold text-stone-700 mb-1">

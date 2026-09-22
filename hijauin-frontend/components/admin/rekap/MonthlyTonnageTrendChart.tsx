@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ResponsiveContainer,
   BarChart,
@@ -65,16 +66,29 @@ export function MonthlyTonnageTrendChart({
   trend = [],
   isLoading,
 }: MonthlyTonnageTrendChartProps) {
+  const [isMounted, setIsMounted] = useState(false);
   const [chartType, setChartType] = useState<'bar' | 'area'>('bar');
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const safeTrend: RekapMonthlyTrend[] = (
+    Array.isArray(trend)
+      ? trend
+      : trend && typeof trend === 'object'
+        ? Object.values(trend)
+        : []
+  ) as RekapMonthlyTrend[];
+
   // Format trend data for Recharts
-  const data = trend.map((t) => ({
-    label: t.label,
-    plastik: t.breakdown?.plastik ?? 0,
-    kertas: t.breakdown?.kertas ?? 0,
-    logam: t.breakdown?.logam ?? 0,
-    kaca: t.breakdown?.kaca ?? 0,
-    total: t.total_kg,
+  const data = safeTrend.map((t) => ({
+    label: t?.label || '',
+    plastik: t?.breakdown?.plastik ?? 0,
+    kertas: t?.breakdown?.kertas ?? 0,
+    logam: t?.breakdown?.logam ?? 0,
+    kaca: t?.breakdown?.kaca ?? 0,
+    total: Number(t?.total_kg ?? 0),
   }));
 
   const hasData = data.some((d) => d.total > 0);
@@ -119,7 +133,7 @@ export function MonthlyTonnageTrendChart({
       </div>
 
       <div className="mt-4 flex-1 min-h-[300px] w-full">
-        {isLoading ? (
+        {!isMounted || isLoading ? (
           <div className="h-full flex items-center justify-center text-xs text-stone-400">
             Memuat grafik tren historis...
           </div>

@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ResponsiveContainer,
   PieChart,
@@ -66,14 +67,27 @@ export function MaterialDistributionChart({
   totalKg,
   isLoading,
 }: MaterialDistributionChartProps) {
+  const [isMounted, setIsMounted] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-  const chartData = breakdown.map((item) => ({
-    name: JENIS_SAMPAH_LABELS[item.jenis] || item.jenis,
-    value: item.total_kg,
-    jenis: item.jenis,
-    percent: totalKg > 0 ? (item.total_kg / totalKg) * 100 : 0,
-    poin: item.total_poin,
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const safeBreakdown: RekapBreakdown[] = (
+    Array.isArray(breakdown)
+      ? breakdown
+      : breakdown && typeof breakdown === 'object'
+        ? Object.values(breakdown)
+        : []
+  ) as RekapBreakdown[];
+
+  const chartData = safeBreakdown.map((item) => ({
+    name: JENIS_SAMPAH_LABELS[item?.jenis] || item?.jenis || 'Lainnya',
+    value: Number(item?.total_kg ?? 0),
+    jenis: item?.jenis ?? 'lainnya',
+    percent: totalKg > 0 ? (Number(item?.total_kg ?? 0) / totalKg) * 100 : 0,
+    poin: Number(item?.total_poin ?? 0),
   }));
 
   const hasData = chartData.some((d) => d.value > 0);
@@ -92,7 +106,7 @@ export function MaterialDistributionChart({
       </div>
 
       <div className="mt-4 relative flex-1 flex items-center justify-center min-h-[260px]">
-        {isLoading ? (
+        {!isMounted || isLoading ? (
           <div className="text-xs text-stone-400">Memuat visualisasi komposisi...</div>
         ) : !hasData ? (
           <div className="text-center py-8 space-y-2">

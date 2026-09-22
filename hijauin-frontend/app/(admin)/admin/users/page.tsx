@@ -11,6 +11,7 @@ import {
 } from '@/lib/queries/ops.queries';
 import { DataTableToolbar } from '@/components/common/DataTableToolbar';
 import { Pagination } from '@/components/ui/Pagination';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import Combobox, { type ComboboxOption } from '@/components/common/Combobox';
 import type { User } from '@/lib/types';
 
@@ -466,18 +467,13 @@ export default function OpsUsersPage() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-stone-800 mb-1">
-                    Password Sementara
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full text-xs px-3 py-2 border border-stone-300 rounded-[4px] focus:outline-none focus:border-[#0B3D26] bg-[#FAF8F5]"
-                  />
-                </div>
+                <PasswordInput
+                  label="Password Sementara"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Minimal 8 karakter"
+                />
 
                 <div>
                   <label className="block text-xs font-semibold text-stone-800 mb-1">

@@ -108,7 +108,7 @@ export default function NasabahLayout({ children }: { children: React.ReactNode 
   return (
     <div className="flex min-h-screen bg-[#FAF8F5] text-stone-900 font-sans">
       {/* ── Desktop Sidebar ─────────────────────────────────────── */}
-      <aside className="hidden lg:flex w-64 flex-col justify-between border-r border-stone-200 bg-white shadow-[1px_0_3px_rgba(0,0,0,0.01)] shrink-0">
+      <aside className="hidden lg:flex w-64 flex-col justify-between border-r border-stone-200 bg-white shadow-[1px_0_3px_rgba(0,0,0,0.01)] shrink-0 sticky top-0 h-screen overflow-y-auto">
         <div>
           {/* Brand Header */}
           <div className="p-6 border-b border-stone-100 space-y-3">

@@ -10,6 +10,7 @@ import { registerSchema, type RegisterInput } from '@/lib/schemas/auth.schema';
 import { useRegister, useUnits } from '@/lib/queries/auth.queries';
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
 import Combobox, { type ComboboxOption } from '@/components/common/Combobox';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { useAuthStore, getDefaultDashboard } from '@/lib/auth';
 
 /**
@@ -46,7 +47,6 @@ export default function RegisterPage() {
       value: u.id,
       label: u.nama,
       description: u.alamat || undefined,
-      image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=120&auto=format&fit=crop&q=80',
       badge: {
         text: 'UNIT RESMI',
         color: '#1F6B3F',
@@ -66,7 +66,7 @@ export default function RegisterPage() {
         unit_id: Number(data.unit_id),
         phone: data.phone || undefined,
         alamat: data.alamat || undefined,
-      });
+      }); 
       const currentUser = useAuthStore.getState().user;
       router.push(getDefaultDashboard(currentUser));
     } catch {
@@ -200,43 +200,24 @@ export default function RegisterPage() {
 
         {/* Password & Konfirmasi Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <label htmlFor="password" className="block text-xs font-semibold text-stone-800">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              {...register('password')}
-              placeholder="Minimal 8 karakter"
-              className={`w-full rounded-[4px] border bg-white px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-[#0B3D26] focus:outline-none focus:ring-1 focus:ring-[#0B3D26] transition-colors ${
-                errors.password ? 'border-[#C1441F]' : 'border-stone-300'
-              }`}
-            />
-            {errors.password && (
-              <p className="text-xs text-[#C1441F]">{errors.password.message}</p>
-            )}
-          </div>
+          <PasswordInput
+            id="password"
+            label="Password"
+            autoComplete="new-password"
+            placeholder="Minimal 8 karakter"
+            showStrength
+            error={errors.password?.message}
+            {...register('password')}
+          />
 
-          <div className="space-y-1.5">
-            <label htmlFor="password_confirmation" className="block text-xs font-semibold text-stone-800">
-              Konfirmasi Password
-            </label>
-            <input
-              id="password_confirmation"
-              type="password"
-              autoComplete="new-password"
-              {...register('password_confirmation')}
-              placeholder="Ulangi password"
-              className={`w-full rounded-[4px] border bg-white px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-[#0B3D26] focus:outline-none focus:ring-1 focus:ring-[#0B3D26] transition-colors ${
-                errors.password_confirmation ? 'border-[#C1441F]' : 'border-stone-300'
-              }`}
-            />
-            {errors.password_confirmation && (
-              <p className="text-xs text-[#C1441F]">{errors.password_confirmation.message}</p>
-            )}
-          </div>
+          <PasswordInput
+            id="password_confirmation"
+            label="Konfirmasi Password"
+            autoComplete="new-password"
+            placeholder="Ulangi password"
+            error={errors.password_confirmation?.message}
+            {...register('password_confirmation')}
+          />
         </div>
 
         {/* Submit */}

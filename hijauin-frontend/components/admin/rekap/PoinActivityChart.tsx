@@ -1,5 +1,7 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
+import { useState, useEffect } from 'react';
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -61,10 +63,24 @@ export function PoinActivityChart({
   trend = [],
   isLoading,
 }: PoinActivityChartProps) {
-  const data = trend.map((t) => ({
-    label: t.label,
-    total_poin: t.total_poin,
-    jumlah_setoran: t.jumlah_setoran,
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const safeTrend: RekapMonthlyTrend[] = (
+    Array.isArray(trend)
+      ? trend
+      : trend && typeof trend === 'object'
+        ? Object.values(trend)
+        : []
+  ) as RekapMonthlyTrend[];
+
+  const data = safeTrend.map((t) => ({
+    label: t?.label || '',
+    total_poin: Number(t?.total_poin ?? 0),
+    jumlah_setoran: Number(t?.jumlah_setoran ?? 0),
   }));
 
   const hasData = data.some((d) => d.total_poin > 0 || d.jumlah_setoran > 0);
@@ -81,7 +97,7 @@ export function PoinActivityChart({
       </div>
 
       <div className="mt-4 flex-1 min-h-[260px] w-full">
-        {isLoading ? (
+        {!isMounted || isLoading ? (
           <div className="h-full flex items-center justify-center text-xs text-stone-400">
             Memuat statistik perputaran poin...
           </div>

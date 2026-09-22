@@ -145,13 +145,14 @@ export function useOpsRoles() {
   });
 }
 
-export function useOpsUnits() {
+export function useOpsUnits(enabled = true) {
   return useQuery({
     queryKey: ['ops', 'units'],
     queryFn: async (): Promise<(BankSampahUnit & { nasabah_profiles_count?: number; kategoris_count?: number })[]> => {
       const { data } = await api.get<{ data: (BankSampahUnit & { nasabah_profiles_count?: number; kategoris_count?: number })[] }>('/ops/units');
       return data.data;
     },
+    enabled,
   });
 }
 

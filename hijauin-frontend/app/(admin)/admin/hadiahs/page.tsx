@@ -3,10 +3,19 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAdminHadiahs, useCreateHadiah, useDeleteHadiah } from '@/lib/queries/admin.queries';
+import {
+  useAdminHadiahs,
+  useCreateHadiah,
+  useBulkCreateHadiah,
+  useDeleteHadiah,
+} from '@/lib/queries/admin.queries';
 import { DataTableToolbar } from '@/components/common/DataTableToolbar';
 import { Pagination } from '@/components/ui/Pagination';
 import CloudinaryImageUpload from '@/components/common/CloudinaryImageUpload';
+import DataImportModal, { type ImportColumn } from '@/components/common/DataImportModal';
+import { exportToCsv, exportToExcel } from '@/lib/utils/export.utils';
+import type { Hadiah } from '@/lib/types';
+import type { HadiahInput } from '@/lib/schemas/admin.schema';
 
 const STOCK_FILTER_OPTIONS = [
   { value: 'all', label: 'Semua Stok' },
@@ -21,6 +30,47 @@ const SORT_OPTIONS = [
   { value: 'created_at', label: 'Tanggal Ditambahkan' },
 ];
 
+const IMPORT_COLUMNS: ImportColumn<HadiahInput>[] = [
+  {
+    key: 'nama',
+    label: 'Nama Hadiah',
+    type: 'text',
+    required: true,
+    sample: 'Minyak Goreng 1 Liter',
+  },
+  {
+    key: 'poin_diperlukan',
+    label: 'Poin Dibutuhkan',
+    type: 'number',
+    required: true,
+    defaultValue: 100,
+    validate: (val) => (Number(val) <= 0 ? 'Poin harus lebih dari 0.' : null),
+    sample: 150,
+  },
+  {
+    key: 'stok',
+    label: 'Jumlah Stok',
+    type: 'number',
+    required: true,
+    defaultValue: 10,
+    validate: (val) => (Number(val) < 0 ? 'Stok tidak boleh negatif.' : null),
+    sample: 25,
+  },
+  {
+    key: 'deskripsi',
+    label: 'Deskripsi',
+    type: 'text',
+    sample: 'Minyak goreng kelapa sawit higienis pouch 1 liter',
+  },
+];
+
+const SAMPLE_IMPORT_ROWS = [
+  ['Minyak Goreng 1 Liter', 150, 25, 'Minyak goreng kelapa sawit higienis 1 liter'],
+  ['Beras Premium 2.5 kg', 300, 15, 'Beras putih pulen kualitas premium'],
+  ['Gula Pasir 1 kg', 120, 30, 'Gula tebu murni kemasan 1 kg'],
+  ['Sabun Cuci Piring 750ml', 80, 40, 'Sabun cuci piring konsentrat antibakteri'],
+];
+
 export default function AdminHadiahsPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
@@ -29,6 +79,7 @@ export default function AdminHadiahsPage() {
   const [sortBy, setSortBy] = useState('poin_diperlukan');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   // Form states
   const [nama, setNama] = useState('');
@@ -46,11 +97,43 @@ export default function AdminHadiahsPage() {
     sortBy,
     sortDir,
   });
-  const createHadiah = useCreateHadiah();
-  const deleteHadiah = useDeleteHadiah();
+  const createHadiahMutation = useCreateHadiah();
+  const bulkCreateHadiahMutation = useBulkCreateHadiah();
+  const deleteHadiahMutation = useDeleteHadiah();
 
-  const hadiahs = hadiahsData?.data ?? [];
+  const hadiahs: Hadiah[] = hadiahsData?.data ?? [];
   const meta = hadiahsData?.meta;
+
+  const handleExportCsv = () => {
+    const headers = ['Nama Hadiah', 'Poin Dibutuhkan', 'Stok', 'Deskripsi'];
+    const rows = hadiahs.map((h) => [
+      h.nama,
+      h.poin_diperlukan,
+      h.stok,
+      h.deskripsi || '',
+    ]);
+    exportToCsv(`katalog_hadiah_${new Date().toISOString().split('T')[0]}`, headers, rows);
+  };
+
+  const handleExportExcel = () => {
+    const headers = ['Nama Hadiah', 'Poin Dibutuhkan', 'Stok', 'Deskripsi'];
+    const rows = hadiahs.map((h) => [
+      h.nama,
+      h.poin_diperlukan,
+      h.stok,
+      h.deskripsi || '',
+    ]);
+    exportToExcel(
+      `katalog_hadiah_${new Date().toISOString().split('T')[0]}`,
+      'Katalog Hadiah',
+      headers,
+      rows
+    );
+  };
+
+  const handleBulkImportConfirm = async (items: HadiahInput[]) => {
+    await bulkCreateHadiahMutation.mutateAsync(items);
+  };
 
   const handleSearchChange = (val: string) => {
     setSearch(val);
@@ -88,7 +171,7 @@ export default function AdminHadiahsPage() {
     setErrorMsg('');
 
     try {
-      await createHadiah.mutateAsync({
+      await createHadiahMutation.mutateAsync({
         nama: nama.trim(),
         deskripsi: deskripsi.trim() || undefined,
         poin_diperlukan: parseInt(poinDiperlukan, 10),
@@ -113,7 +196,7 @@ export default function AdminHadiahsPage() {
 
   const handleDelete = async (id: number) => {
     if (confirm('Yakin ingin menghapus item hadiah ini dari katalog unit?')) {
-      await deleteHadiah.mutateAsync(id);
+      await deleteHadiahMutation.mutateAsync(id);
     }
   };
 
@@ -134,16 +217,57 @@ export default function AdminHadiahsPage() {
           </h1>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[4px] bg-[#0B3D26] hover:bg-[#1F6B3F] text-[#F1ECDF] text-xs font-semibold tracking-wide transition-all shadow-sm cursor-pointer"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Tambah Hadiah Baru
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Export Actions */}
+          <div className="flex items-center rounded-[4px] border border-stone-300 bg-white overflow-hidden shadow-2xs">
+            <button
+              type="button"
+              onClick={handleExportCsv}
+              className="px-3 py-2 text-xs font-medium text-stone-700 hover:bg-stone-50 border-r border-stone-200 flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Ekspor ke format CSV"
+            >
+              <svg className="w-3.5 h-3.5 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Ekspor CSV
+            </button>
+            <button
+              type="button"
+              onClick={handleExportExcel}
+              className="px-3 py-2 text-xs font-medium text-[#1F6B3F] hover:bg-[#1F6B3F]/5 flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Ekspor ke format Excel (.xlsx)"
+            >
+              <svg className="w-3.5 h-3.5 text-[#1F6B3F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Excel
+            </button>
+          </div>
+
+          {/* Import Batch Action */}
+          <button
+            type="button"
+            onClick={() => setIsImportModalOpen(true)}
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-[4px] border border-stone-300 hover:border-stone-400 bg-white text-stone-800 text-xs font-semibold tracking-wide transition-all shadow-2xs cursor-pointer"
+          >
+            <svg className="w-4 h-4 text-[#1F6B3F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l4-4m0 0l4 4m-4-4v12" />
+            </svg>
+            Impor CSV / XLSX
+          </button>
+
+          {/* Add Single Reward */}
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[4px] bg-[#0B3D26] hover:bg-[#1F6B3F] text-[#F1ECDF] text-xs font-semibold tracking-wide transition-all shadow-sm cursor-pointer"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Tambah Hadiah Baru
+          </button>
+        </div>
       </div>
 
       {/* Search, Filter & Sort Toolbar */}
@@ -362,10 +486,10 @@ export default function AdminHadiahsPage() {
                   </button>
                   <button
                     type="submit"
-                    disabled={createHadiah.isPending}
+                    disabled={createHadiahMutation.isPending}
                     className="px-5 py-2 rounded-[4px] bg-[#0B3D26] hover:bg-[#1F6B3F] text-white text-xs font-semibold disabled:opacity-50"
                   >
-                    {createHadiah.isPending ? 'Menyimpan...' : 'Simpan Hadiah'}
+                    {createHadiahMutation.isPending ? 'Menyimpan...' : 'Simpan Hadiah'}
                   </button>
                 </div>
               </form>
@@ -373,6 +497,18 @@ export default function AdminHadiahsPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Batch Import Staging Modal */}
+      <DataImportModal<HadiahInput>
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        title="Impor Katalog Hadiah dari Spreadsheet"
+        description="Unggah file CSV atau Excel, pilih, edit, atau eliminasi baris data sebelum disimpan ke inventaris bank sampah."
+        columns={IMPORT_COLUMNS}
+        templateFilename="template_katalog_hadiah"
+        sampleRows={SAMPLE_IMPORT_ROWS}
+        onConfirmImport={handleBulkImportConfirm}
+      />
     </div>
   );
 }
