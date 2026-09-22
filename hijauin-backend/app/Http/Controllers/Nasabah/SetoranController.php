@@ -119,7 +119,7 @@ class SetoranController extends Controller
                 $list = KategoriSampah::where('unit_id', 1)->get();
             }
 
-            return $list;
+            return $list->toArray();
         });
 
         return $this->successResponse($kategoris);

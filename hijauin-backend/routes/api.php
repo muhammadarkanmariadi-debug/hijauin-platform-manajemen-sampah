@@ -67,7 +67,9 @@ Route::middleware('auth:sanctum')->group(function () {
         ->prefix('admin')
         ->group(function () {
             Route::apiResource('nasabahs', AdminNasabahController::class);
+            Route::post('/kategoris/bulk', [KategoriController::class, 'bulkStore']);
             Route::apiResource('kategoris', KategoriController::class);
+            Route::post('/hadiahs/bulk', [HadiahController::class, 'bulkStore']);
             Route::apiResource('hadiahs', HadiahController::class);
 
             Route::post('/setorans/{setoran}/verify', [VerifikasiController::class, 'verify']);

@@ -138,7 +138,7 @@ class PenukaranController extends Controller
                     ->get();
             }
 
-            return $list;
+            return $list->toArray();
         });
 
         return $this->successResponse($hadiahs);

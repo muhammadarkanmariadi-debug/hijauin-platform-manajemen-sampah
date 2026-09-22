@@ -103,6 +103,32 @@ class HadiahController extends Controller
         return $this->createdResponse($hadiah);
     }
 
+    public function bulkStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.nama' => ['required', 'string', 'max:150'],
+            'items.*.poin_diperlukan' => ['required', 'integer', 'min:1'],
+            'items.*.stok' => ['required', 'integer', 'min:0'],
+            'items.*.deskripsi' => ['nullable', 'string'],
+            'items.*.foto_url' => ['nullable', 'string'],
+        ]);
+
+        $created = [];
+        \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $request, &$created) {
+            foreach ($validated['items'] as $itemData) {
+                $created[] = Hadiah::create([
+                    ...$itemData,
+                    'unit_id' => $request->unit_id,
+                ]);
+            }
+        });
+
+        $this->touchCache($request->unit_id);
+
+        return $this->createdResponse($created);
+    }
+
     public function update(UpdateHadiahRequest $request, Hadiah $hadiah): JsonResponse
     {
         if ($hadiah->unit_id !== $request->unit_id) {

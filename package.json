@@ -18,6 +18,7 @@
     "secrets:import": "node scripts/import-github-secrets.mjs"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "libsodium-wrappers": "^0.8.4"
   }
 }

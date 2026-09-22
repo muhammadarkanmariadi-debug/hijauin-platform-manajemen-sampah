@@ -1,0 +1,389 @@
+[
+  {
+    "suite": "Auth_Flow",
+    "stepNumber": 1,
+    "name": "Landing_Page_Hero",
+    "description": "Editorial public landing page with documentary aesthetic and typography",
+    "screenshotPath": "e2e-evidence/auth_flow/01_landing_page_hero.png",
+    "timestamp": "2026-09-22T00:52:09.238Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Auth_Flow",
+    "stepNumber": 2,
+    "name": "Register_Form_Initial",
+    "description": "Initial registration form with Bank Sampah Unit selection",
+    "screenshotPath": "e2e-evidence/auth_flow/02_register_form_initial.png",
+    "timestamp": "2026-09-22T00:52:11.527Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Auth_Flow",
+    "stepNumber": 3,
+    "name": "Register_Validation_Errors",
+    "description": "Client-side Zod validation errors displayed for email format and password length/mismatch",
+    "screenshotPath": "e2e-evidence/auth_flow/03_register_validation_errors.png",
+    "timestamp": "2026-09-22T00:52:12.324Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Auth_Flow",
+    "stepNumber": 4,
+    "name": "Register_Form_Filled",
+    "description": "Filled registration form ready for submission",
+    "screenshotPath": "e2e-evidence/auth_flow/04_register_form_filled.png",
+    "timestamp": "2026-09-22T00:52:14.405Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Auth_Flow",
+    "stepNumber": 5,
+    "name": "Register_Success_Dashboard",
+    "description": "Successful registration redirects seamlessly to Nasabah Dashboard",
+    "screenshotPath": "e2e-evidence/auth_flow/05_register_success_dashboard.png",
+    "timestamp": "2026-09-22T00:52:15.658Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Auth_Flow",
+    "stepNumber": 6,
+    "name": "Login_Form_Initial",
+    "description": "Login screen with email, password fields and Google auth option",
+    "screenshotPath": "e2e-evidence/auth_flow/06_login_form_initial.png",
+    "timestamp": "2026-09-22T00:52:17.557Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Auth_Flow",
+    "stepNumber": 7,
+    "name": "Login_Invalid_Fallback_Error",
+    "description": "Proper fallback error banner shown upon invalid authentication attempt",
+    "screenshotPath": "e2e-evidence/auth_flow/07_login_invalid_fallback_error.png",
+    "timestamp": "2026-09-22T00:52:18.991Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Auth_Flow",
+    "stepNumber": 8,
+    "name": "Login_Nasabah_Success",
+    "description": "Nasabah user successfully logged in and redirected to /dashboard",
+    "screenshotPath": "e2e-evidence/auth_flow/08_login_nasabah_success.png",
+    "timestamp": "2026-09-22T00:52:23.154Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Auth_Flow",
+    "stepNumber": 9,
+    "name": "Login_Admin_Success",
+    "description": "Admin Unit user successfully logged in and routed to /admin/dashboard",
+    "screenshotPath": "e2e-evidence/auth_flow/09_login_admin_success.png",
+    "timestamp": "2026-09-22T00:52:27.790Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Nasabah_Journey",
+    "stepNumber": 5,
+    "name": "Katalog_Hadiah_Overview",
+    "description": "Rewards catalog displaying available reward items and point costs",
+    "screenshotPath": "e2e-evidence/nasabah_journey/05_katalog_hadiah_overview.png",
+    "timestamp": "2026-09-22T00:52:42.089Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Nasabah_Journey",
+    "stepNumber": 6,
+    "name": "Katalog_Hadiah_Search",
+    "description": "Frontend real-time search filtering in reward catalog",
+    "screenshotPath": "e2e-evidence/nasabah_journey/06_katalog_hadiah_search.png",
+    "timestamp": "2026-09-22T00:52:42.769Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Nasabah_Journey",
+    "stepNumber": 7,
+    "name": "Katalog_Hadiah_Sorted_Poin_Desc",
+    "description": "Rewards sorted from highest to lowest points required",
+    "screenshotPath": "e2e-evidence/nasabah_journey/07_katalog_hadiah_sorted_poin_desc.png",
+    "timestamp": "2026-09-22T00:52:43.534Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Nasabah_Journey",
+    "stepNumber": 8,
+    "name": "Riwayat_Penukaran_Tab",
+    "description": "History of point redemptions with status badges and redemption IDs",
+    "screenshotPath": "e2e-evidence/nasabah_journey/08_riwayat_penukaran_tab.png",
+    "timestamp": "2026-09-22T00:52:44.252Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Nasabah_Journey",
+    "stepNumber": 9,
+    "name": "Profil_Nasabah_Initial",
+    "description": "Nasabah profile page showing personal data, unit registration, and account ID",
+    "screenshotPath": "e2e-evidence/nasabah_journey/09_profil_nasabah_initial.png",
+    "timestamp": "2026-09-22T00:52:48.327Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Nasabah_Journey",
+    "stepNumber": 10,
+    "name": "Profil_Nasabah_Updated_Success",
+    "description": "Successful profile update with confirmation alert",
+    "screenshotPath": "e2e-evidence/nasabah_journey/10_profil_nasabah_updated_success.png",
+    "timestamp": "2026-09-22T00:52:49.603Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Journey",
+    "stepNumber": 1,
+    "name": "Admin_Dashboard_Overview",
+    "description": "Admin Unit dashboard showing monthly tonnage KPIs, active queue and unit summary",
+    "screenshotPath": "e2e-evidence/admin_journey/01_admin_dashboard_overview.png",
+    "timestamp": "2026-09-22T00:52:52.486Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Journey",
+    "stepNumber": 2,
+    "name": "Kategori_List_Initial",
+    "description": "Kategori Sampah management directory with price/point rates per material",
+    "screenshotPath": "e2e-evidence/admin_journey/02_kategori_list_initial.png",
+    "timestamp": "2026-09-22T00:52:55.468Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Journey",
+    "stepNumber": 3,
+    "name": "Kategori_Search_PET",
+    "description": "Search query filtering PET category materials dynamically",
+    "screenshotPath": "e2e-evidence/admin_journey/03_kategori_search_pet.png",
+    "timestamp": "2026-09-22T00:52:56.251Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Journey",
+    "stepNumber": 4,
+    "name": "Kategori_Filter_Kertas",
+    "description": "Filtering waste category table specifically by Kertas material classification",
+    "screenshotPath": "e2e-evidence/admin_journey/04_kategori_filter_kertas.png",
+    "timestamp": "2026-09-22T00:52:57.074Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Journey",
+    "stepNumber": 5,
+    "name": "Kategori_Create_Modal_Filled",
+    "description": "Create Kategori modal filled with new material pricing and point metrics",
+    "screenshotPath": "e2e-evidence/admin_journey/05_kategori_create_modal_filled.png",
+    "timestamp": "2026-09-22T00:52:57.739Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Journey",
+    "stepNumber": 6,
+    "name": "Kategori_Created_Success",
+    "description": "Newly registered category displayed in table verified from backend",
+    "screenshotPath": "e2e-evidence/admin_journey/06_kategori_created_success.png",
+    "timestamp": "2026-09-22T00:53:01.109Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Journey",
+    "stepNumber": 7,
+    "name": "Hadiah_List_Initial",
+    "description": "Admin unit reward catalog management with points pricing and inventory stock",
+    "screenshotPath": "e2e-evidence/admin_journey/07_hadiah_list_initial.png",
+    "timestamp": "2026-09-22T00:53:06.269Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Journey",
+    "stepNumber": 8,
+    "name": "Hadiah_Search_Filtered",
+    "description": "Searching rewards by keyword \"Beras\"",
+    "screenshotPath": "e2e-evidence/admin_journey/08_hadiah_search_filtered.png",
+    "timestamp": "2026-09-22T00:53:07.093Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Journey",
+    "stepNumber": 9,
+    "name": "Hadiah_Create_Modal_Filled",
+    "description": "Create Hadiah modal populated with inventory details and point cost",
+    "screenshotPath": "e2e-evidence/admin_journey/09_hadiah_create_modal_filled.png",
+    "timestamp": "2026-09-22T00:53:07.849Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Journey",
+    "stepNumber": 10,
+    "name": "Hadiah_Created_Success",
+    "description": "New reward added to inventory and active in unit reward catalog",
+    "screenshotPath": "e2e-evidence/admin_journey/10_hadiah_created_success.png",
+    "timestamp": "2026-09-22T00:53:12.371Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Journey",
+    "stepNumber": 11,
+    "name": "Setorans_Verification_Queue",
+    "description": "Setoran submission verification queue for admin weigh-in and approval",
+    "screenshotPath": "e2e-evidence/admin_journey/11_setorans_verification_queue.png",
+    "timestamp": "2026-09-22T00:53:17.256Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Journey",
+    "stepNumber": 12,
+    "name": "Setorans_Filtered_Pending",
+    "description": "Queue filtered to show only submissions awaiting physical weighing",
+    "screenshotPath": "e2e-evidence/admin_journey/12_setorans_filtered_pending.png",
+    "timestamp": "2026-09-22T00:53:18.105Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Journey",
+    "stepNumber": 13,
+    "name": "Setorans_Weigh_Verification_Modal",
+    "description": "Physical weigh-in modal allowing real weight adjustments and point calculation",
+    "screenshotPath": "e2e-evidence/admin_journey/13_setorans_weigh_verification_modal.png",
+    "timestamp": "2026-09-22T00:06:10.725Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Journey",
+    "stepNumber": 14,
+    "name": "Nasabah_Directory_Initial",
+    "description": "Nasabah ledger directory displaying citizen profiles and accumulated points balance",
+    "screenshotPath": "e2e-evidence/admin_journey/14_nasabah_directory_initial.png",
+    "timestamp": "2026-09-22T00:53:23.515Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Journey",
+    "stepNumber": 15,
+    "name": "Nasabah_Search_Demo",
+    "description": "Search filtering registered nasabah by name or email",
+    "screenshotPath": "e2e-evidence/admin_journey/15_nasabah_search_demo.png",
+    "timestamp": "2026-09-22T00:53:24.370Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Journey",
+    "stepNumber": 16,
+    "name": "Nasabah_Create_Modal",
+    "description": "Admin modal for direct citizen onboarding at unit location",
+    "screenshotPath": "e2e-evidence/admin_journey/16_nasabah_create_modal.png",
+    "timestamp": "2026-09-22T00:53:25.020Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Nasabah_Journey",
+    "stepNumber": 1,
+    "name": "Dashboard_Overview",
+    "description": "Nasabah dashboard overview with live points balance and canonical 4-material cards",
+    "screenshotPath": "e2e-evidence/nasabah_journey/01_dashboard_overview.png",
+    "timestamp": "2026-09-22T00:52:31.221Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Nasabah_Journey",
+    "stepNumber": 2,
+    "name": "Setor_Modal_Validation_Error",
+    "description": "Setoran modal validation fallback preventing empty or zero weight submission",
+    "screenshotPath": "e2e-evidence/nasabah_journey/02_setor_modal_validation_error.png",
+    "timestamp": "2026-09-22T00:52:35.346Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Journey",
+    "stepNumber": 17,
+    "name": "Rekap_Neraca_Massa_Dashboard",
+    "description": "Comprehensive circular mass-balance audit reporting with material charts and KPI cards",
+    "screenshotPath": "e2e-evidence/admin_journey/17_rekap_neraca_massa_dashboard.png",
+    "timestamp": "2026-09-22T00:53:30.822Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Nasabah_Journey",
+    "stepNumber": 3,
+    "name": "Setor_Modal_Filled_Estimator",
+    "description": "Setor modal dynamically calculating estimated weight, rupiah and points",
+    "screenshotPath": "e2e-evidence/nasabah_journey/03_setor_modal_filled_estimator.png",
+    "timestamp": "2026-09-22T00:52:37.099Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Nasabah_Journey",
+    "stepNumber": 4,
+    "name": "Setor_Modal_Success_Confirmation",
+    "description": "Submission recorded successfully with user guidance for drop-off",
+    "screenshotPath": "e2e-evidence/nasabah_journey/04_setor_modal_success_confirmation.png",
+    "timestamp": "2026-09-22T00:52:38.480Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Import_Export",
+    "stepNumber": 2,
+    "name": "Kategori_Import_Dropzone_Modal",
+    "description": "Batch Import modal dropzone with template download buttons",
+    "screenshotPath": "e2e-evidence/admin_import_export/02_kategori_import_dropzone_modal.png",
+    "timestamp": "2026-09-22T00:53:46.558Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Import_Export",
+    "stepNumber": 3,
+    "name": "Kategori_Import_Staging_Parsed",
+    "description": "Staging table showing 3 parsed category rows with checkboxes and inline inputs",
+    "screenshotPath": "e2e-evidence/admin_import_export/03_kategori_import_staging_parsed.png",
+    "timestamp": "2026-09-22T00:53:47.285Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Import_Export",
+    "stepNumber": 4,
+    "name": "Kategori_Import_Staging_Modified",
+    "description": "Staging table after eliminating row 3, editing price in row 1, and selecting 1 row",
+    "screenshotPath": "e2e-evidence/admin_import_export/04_kategori_import_staging_modified.png",
+    "timestamp": "2026-09-22T00:53:48.244Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Import_Export",
+    "stepNumber": 6,
+    "name": "Hadiah_Import_Staging_Table",
+    "description": "Hadiah batch import staging preview with 2 items",
+    "screenshotPath": "e2e-evidence/admin_import_export/06_hadiah_import_staging_table.png",
+    "timestamp": "2026-09-22T00:53:59.750Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Rekap_Fix",
+    "stepNumber": 1,
+    "name": "Rekap_Page_Clean_Render",
+    "description": "Rekap page rendering safely with material breakdown charts and export buttons",
+    "screenshotPath": "e2e-evidence/admin_rekap_fix/01_rekap_page_clean_render.png",
+    "timestamp": "2026-09-22T00:53:40.228Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Import_Export",
+    "stepNumber": 5,
+    "name": "Kategori_Import_Success_Updated_Table",
+    "description": "Kategori table successfully updated with newly imported category",
+    "screenshotPath": "e2e-evidence/admin_import_export/05_kategori_import_success_updated_table.png",
+    "timestamp": "2026-09-22T00:53:52.677Z",
+    "status": "passed"
+  },
+  {
+    "suite": "Admin_Import_Export",
+    "stepNumber": 7,
+    "name": "Hadiah_Import_Success_Catalog",
+    "description": "Rewards catalog successfully updated with batch imported rewards",
+    "screenshotPath": "e2e-evidence/admin_import_export/07_hadiah_import_success_catalog.png",
+    "timestamp": "2026-09-22T00:54:03.471Z",
+    "status": "passed"
+  }
+]

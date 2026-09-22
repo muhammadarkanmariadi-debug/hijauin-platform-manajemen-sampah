@@ -101,6 +101,33 @@ class KategoriController extends Controller
         return $this->createdResponse($kategori);
     }
 
+    public function bulkStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.nama' => ['required', 'string', 'max:100'],
+            'items.*.jenis' => ['required', 'string', 'in:plastik,kertas,logam,kaca'],
+            'items.*.harga_per_kg' => ['required', 'numeric', 'min:0'],
+            'items.*.poin_per_kg' => ['required', 'integer', 'min:0'],
+            'items.*.deskripsi' => ['nullable', 'string'],
+            'items.*.foto_url' => ['nullable', 'string'],
+        ]);
+
+        $created = [];
+        \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $request, &$created) {
+            foreach ($validated['items'] as $itemData) {
+                $created[] = KategoriSampah::create([
+                    ...$itemData,
+                    'unit_id' => $request->unit_id,
+                ]);
+            }
+        });
+
+        $this->touchCache($request->unit_id);
+
+        return $this->createdResponse($created);
+    }
+
     public function update(UpdateKategoriRequest $request, KategoriSampah $kategori): JsonResponse
     {
         if ($kategori->unit_id !== $request->unit_id) {

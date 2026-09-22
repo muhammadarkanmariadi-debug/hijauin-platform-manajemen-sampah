@@ -175,7 +175,7 @@ class RekapController extends Controller
                     'prev_total_kg' => $prevKg,
                     'prev_total_poin' => $prevPoin,
                 ],
-                'breakdown' => $breakdown,
+                'breakdown' => $breakdown->values()->toArray(),
                 'trend' => $trend,
             ];
         });
