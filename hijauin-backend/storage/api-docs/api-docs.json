@@ -1,0 +1,2972 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Hijauin v2 API Documentation",
+        "description": "Dokumentasi Resmi & Lengkap RESTful API Hijauin v2 - Platform Manajemen Bank Sampah Digital Multi-Unit. Mendukung otentikasi Sanctum Bearer Token, multi-unit scoping, batch import CSV/XLSX, dan operasional bank sampah terintegrasi.",
+        "contact": {
+            "name": "Tim Hijauin Developer",
+            "url": "https://hijauin.id",
+            "email": "dev@hijauin.id"
+        },
+        "license": {
+            "name": "MIT / Proprietary",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "2.0.0"
+    },
+    "servers": [
+        {
+            "url": "/",
+            "description": "Current Environment Host"
+        }
+    ],
+    "paths": {
+        "/api/auth/register": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Registrasi Pengguna Baru (Nasabah / Petugas / Admin)",
+                "description": "Mendaftarkan akun baru dan langsung menghasilkan Sanctum Bearer Token.",
+                "operationId": "50ea8a721b0991cd6a1a5d0feff7582e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "password_confirmation",
+                                    "unit_id"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Ahmad Nasabah"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "ahmad.nasabah@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Secret123!",
+                                        "minLength": 8
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Secret123!"
+                                    },
+                                    "unit_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "081234567890",
+                                        "nullable": true
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "Jl. Melati No. 15",
+                                        "nullable": true
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "example": "nasabah",
+                                        "default": "nasabah",
+                                        "enum": [
+                                            "nasabah",
+                                            "admin_unit",
+                                            "petugas"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Registrasi berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registrasi berhasil."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "user": {
+                                                    "$ref": "#/components/schemas/User"
+                                                },
+                                                "token": {
+                                                    "type": "string",
+                                                    "example": "1|2zYwXYZabc123456..."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login Pengguna dengan Email & Password",
+                "operationId": "be64c08ad9f8783e67aab642be0ff401",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@bankhijau.id"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "device_name": {
+                                        "type": "string",
+                                        "example": "Web Browser",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Login berhasil."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "user": {
+                                                    "$ref": "#/components/schemas/User"
+                                                },
+                                                "token": {
+                                                    "type": "string",
+                                                    "example": "2|8hJkLmnOpQrStUvw..."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Kredensial tidak valid",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/google": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login / Registrasi Melalui Google OAuth",
+                "operationId": "3c48063b4c48799913c2d30e48162afd",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_token"
+                                ],
+                                "properties": {
+                                    "id_token": {
+                                        "type": "string",
+                                        "example": "eyJhbGciOiJSUzI1NiIs..."
+                                    },
+                                    "unit_id": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Google Auth berhasil diverifikasi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "user": {
+                                                    "$ref": "#/components/schemas/User"
+                                                },
+                                                "token": {
+                                                    "type": "string",
+                                                    "example": "3|googleAuthToken123..."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/units": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Daftar Unit Bank Sampah Publik",
+                "description": "Digunakan saat registrasi nasabah dan onboarding untuk memilih unit bank sampah.",
+                "operationId": "9da4e4522639d714f21845312a9dca9a",
+                "responses": {
+                    "200": {
+                        "description": "Daftar unit aktif",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/UnitBankSampah"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Informasi Akun Pengguna Sesi Saat Ini",
+                "operationId": "40c4d022bf20a5a8aecfbd9cc4f1a902",
+                "responses": {
+                    "200": {
+                        "description": "Data profil, role, unit, dan saldo poin pengguna",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "user": {
+                                                    "$ref": "#/components/schemas/User"
+                                                },
+                                                "unit": {
+                                                    "$ref": "#/components/schemas/UnitBankSampah"
+                                                },
+                                                "saldo_poin": {
+                                                    "type": "integer",
+                                                    "example": 450
+                                                },
+                                                "saldo_rupiah": {
+                                                    "type": "number",
+                                                    "example": 45000
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logout & Mencabut Token Sanctum",
+                "operationId": "6dc1ca9954cf2a1378be4d443e5c8e67",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil logout",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Berhasil logout."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/upload": {
+            "post": {
+                "tags": [
+                    "Upload"
+                ],
+                "summary": "Unggah Gambar / Bukti ke Penyimpanan Cloud S3 / Lokal",
+                "operationId": "567f7456bc8887051197581419c787f7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "file"
+                                ],
+                                "properties": {
+                                    "file": {
+                                        "description": "File gambar (JPG, PNG, WEBP, maks 5MB)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "folder": {
+                                        "type": "string",
+                                        "example": "setorans",
+                                        "default": "setorans",
+                                        "enum": [
+                                            "kategoris",
+                                            "hadiahs",
+                                            "setorans",
+                                            "avatars"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Unggah berkas berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "url": {
+                                                    "type": "string",
+                                                    "example": "https://storage.hijauin.id/setorans/img-20260301.jpg"
+                                                },
+                                                "path": {
+                                                    "type": "string",
+                                                    "example": "setorans/img-20260301.jpg"
+                                                },
+                                                "filename": {
+                                                    "type": "string",
+                                                    "example": "img-20260301.jpg"
+                                                },
+                                                "size": {
+                                                    "type": "integer",
+                                                    "example": 204850
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/nasabah/profil": {
+            "get": {
+                "tags": [
+                    "Nasabah - Profil & Katalog"
+                ],
+                "summary": "Profil & Saldo Nasabah",
+                "operationId": "6d85cda43fdd080c2499d2bf61b021e0",
+                "responses": {
+                    "200": {
+                        "description": "Data profil nasabah dan total setoran",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "user": {
+                                                    "$ref": "#/components/schemas/User"
+                                                },
+                                                "total_setoran_kg": {
+                                                    "type": "number",
+                                                    "example": 48.5
+                                                },
+                                                "total_setoran_count": {
+                                                    "type": "integer",
+                                                    "example": 12
+                                                },
+                                                "saldo_poin": {
+                                                    "type": "integer",
+                                                    "example": 750
+                                                },
+                                                "saldo_rupiah": {
+                                                    "type": "number",
+                                                    "example": 75000
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Nasabah - Profil & Katalog"
+                ],
+                "summary": "Perbarui Data Profil Nasabah",
+                "operationId": "f10bd15ebffbda173c54502f44e63044",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Budi Santoso"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "081298765432"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "Jl. Anggrek No. 10"
+                                    },
+                                    "avatar_url": {
+                                        "type": "string",
+                                        "example": "https://images.unsplash.com/photo-1534528741775-53994a69daeb"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profil berhasil diperbarui",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/nasabah/kategoris": {
+            "get": {
+                "tags": [
+                    "Nasabah - Profil & Katalog"
+                ],
+                "summary": "Daftar Kategori Sampah Pada Unit Nasabah",
+                "operationId": "ea9f6b1cd7df14b321f33d18a0592635",
+                "responses": {
+                    "200": {
+                        "description": "Daftar kategori sampah dan tarif harga/poin",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/KategoriSampah"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/nasabah/hadiahs": {
+            "get": {
+                "tags": [
+                    "Nasabah - Profil & Katalog"
+                ],
+                "summary": "Katalog Hadiah Poin Unit Nasabah",
+                "operationId": "ba5347485dfaf35fbedbddfd4fac6ffa",
+                "responses": {
+                    "200": {
+                        "description": "Daftar hadiah yang dapat ditukarkan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Hadiah"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/nasabah/setorans": {
+            "get": {
+                "tags": [
+                    "Nasabah - Setoran & Penukaran"
+                ],
+                "summary": "Riwayat Setoran Sampah Nasabah",
+                "operationId": "81fcb990c4f2dd65816661ac049b7835",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "all",
+                                "menunggu",
+                                "diterima",
+                                "ditolak"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar setoran sampah nasabah",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/SetoranSampah"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/components/schemas/PaginationMeta"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Nasabah - Setoran & Penukaran"
+                ],
+                "summary": "Mengajukan Setoran Sampah Baru",
+                "operationId": "5234a7755cb0d51245d274a77d9a0257",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "kategori_id",
+                                    "berat_estimasi"
+                                ],
+                                "properties": {
+                                    "kategori_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "berat_estimasi": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 3.5
+                                    },
+                                    "catatan": {
+                                        "type": "string",
+                                        "example": "Botol plastik kering",
+                                        "nullable": true
+                                    },
+                                    "foto_url": {
+                                        "type": "string",
+                                        "example": "https://storage.hijauin.id/setorans/foto1.jpg",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Pengajuan setoran berhasil dibuat dengan status menunggu",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/SetoranSampah"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/nasabah/setorans/{id}": {
+            "get": {
+                "tags": [
+                    "Nasabah - Setoran & Penukaran"
+                ],
+                "summary": "Detail Setoran Sampah",
+                "operationId": "1417e01b6cd1ae80c53ceb5b238bba7d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail setoran sampah",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/nasabah/penukarans": {
+            "get": {
+                "tags": [
+                    "Nasabah - Setoran & Penukaran"
+                ],
+                "summary": "Riwayat Penukaran Hadiah Nasabah",
+                "operationId": "1b346a38f33c9cf0acb8b5c117877792",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Riwayat penukaran hadiah nasabah",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PenukaranHadiah"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/components/schemas/PaginationMeta"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Nasabah - Setoran & Penukaran"
+                ],
+                "summary": "Menukarkan Poin dengan Hadiah",
+                "operationId": "f8cb6cbd9a5260181fec7717b2241482",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "hadiah_id",
+                                    "jumlah"
+                                ],
+                                "properties": {
+                                    "hadiah_id": {
+                                        "type": "integer",
+                                        "example": 8
+                                    },
+                                    "jumlah": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "minimum": 1
+                                    },
+                                    "catatan": {
+                                        "type": "string",
+                                        "example": "Diambil Sabtu pagi",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Penukaran poin berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Saldo poin kurang atau stok tidak cukup",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/kategoris": {
+            "get": {
+                "tags": [
+                    "Admin - Kategori Sampah"
+                ],
+                "summary": "Daftar Kategori Sampah Unit (Admin Unit)",
+                "operationId": "a775346eee1d01979424ac7a443ebf05",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "jenis",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "all",
+                                "plastik",
+                                "kertas",
+                                "logam",
+                                "kaca"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    },
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "nama",
+                                "harga_per_kg",
+                                "poin_per_kg",
+                                "created_at"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "sort_dir",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar kategori sampah unit",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/KategoriSampah"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/components/schemas/PaginationMeta"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin - Kategori Sampah"
+                ],
+                "summary": "Tambah Kategori Sampah Baru",
+                "operationId": "af518c7ddbbf6976e45199d57ceba961",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nama",
+                                    "jenis",
+                                    "harga_per_kg",
+                                    "poin_per_kg"
+                                ],
+                                "properties": {
+                                    "nama": {
+                                        "type": "string",
+                                        "example": "Kardus & Karton Dupleks"
+                                    },
+                                    "jenis": {
+                                        "type": "string",
+                                        "example": "kertas",
+                                        "enum": [
+                                            "plastik",
+                                            "kertas",
+                                            "logam",
+                                            "kaca"
+                                        ]
+                                    },
+                                    "harga_per_kg": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 2500
+                                    },
+                                    "poin_per_kg": {
+                                        "type": "integer",
+                                        "example": 25
+                                    },
+                                    "deskripsi": {
+                                        "type": "string",
+                                        "example": "Kardus cokelat kemasan kering terlipat rapi",
+                                        "nullable": true
+                                    },
+                                    "foto_url": {
+                                        "type": "string",
+                                        "example": "https://images.unsplash.com/photo-1586075010923-2dd4570fb338",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Kategori berhasil dibuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/kategoris/bulk": {
+            "post": {
+                "tags": [
+                    "Admin - Kategori Sampah"
+                ],
+                "summary": "Impor Batch Kategori Sampah (CSV / XLSX Parsed Rows)",
+                "description": "Endpoint penerima array kategori hasil unggahan spreadsheet CSV / Excel dari modal import frontend.",
+                "operationId": "52437bc668673fede47550b1831bb66a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "items"
+                                ],
+                                "properties": {
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "nama",
+                                                "jenis",
+                                                "harga_per_kg",
+                                                "poin_per_kg"
+                                            ],
+                                            "properties": {
+                                                "nama": {
+                                                    "type": "string",
+                                                    "example": "Kaleng Aluminium Minuman"
+                                                },
+                                                "jenis": {
+                                                    "type": "string",
+                                                    "example": "logam",
+                                                    "enum": [
+                                                        "plastik",
+                                                        "kertas",
+                                                        "logam",
+                                                        "kaca"
+                                                    ]
+                                                },
+                                                "harga_per_kg": {
+                                                    "type": "number",
+                                                    "example": 14000
+                                                },
+                                                "poin_per_kg": {
+                                                    "type": "integer",
+                                                    "example": 140
+                                                },
+                                                "deskripsi": {
+                                                    "type": "string",
+                                                    "example": "Kaleng soda bersih dan kempes",
+                                                    "nullable": true
+                                                },
+                                                "foto_url": {
+                                                    "type": "string",
+                                                    "example": "",
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Semua baris kategori sampah berhasil diimpor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/KategoriSampah"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi baris spreadsheet gagal",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/kategoris/{id}": {
+            "get": {
+                "tags": [
+                    "Admin - Kategori Sampah"
+                ],
+                "summary": "Detail Kategori Sampah",
+                "operationId": "c57af40b94c4a47570bbf108b8fa3e67",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail kategori",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Admin - Kategori Sampah"
+                ],
+                "summary": "Memperbarui Kategori Sampah",
+                "operationId": "c960d1b3c2343fda628d4ef22d99d20a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nama": {
+                                        "type": "string",
+                                        "example": "Botol PET Bening Super"
+                                    },
+                                    "harga_per_kg": {
+                                        "type": "number",
+                                        "example": 5000
+                                    },
+                                    "poin_per_kg": {
+                                        "type": "integer",
+                                        "example": 50
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Kategori berhasil diupdate",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin - Kategori Sampah"
+                ],
+                "summary": "Menghapus Kategori Sampah",
+                "operationId": "0f985c849b0a789997918b809abdc743",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Kategori berhasil dihapus"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/hadiahs": {
+            "get": {
+                "tags": [
+                    "Admin - Katalog Hadiah"
+                ],
+                "summary": "Daftar Katalog Hadiah Unit (Admin Unit)",
+                "operationId": "b3ce3ea63e1b971dad725fbffee208e5",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "stock_status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "all",
+                                "tersedia",
+                                "habis"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar katalog hadiah unit",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Hadiah"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/components/schemas/PaginationMeta"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin - Katalog Hadiah"
+                ],
+                "summary": "Tambah Hadiah Baru",
+                "operationId": "2bd7662e240484621aaba884940e0e62",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nama",
+                                    "poin_diperlukan",
+                                    "stok"
+                                ],
+                                "properties": {
+                                    "nama": {
+                                        "type": "string",
+                                        "example": "Beras Premium 2.5 kg"
+                                    },
+                                    "poin_diperlukan": {
+                                        "type": "integer",
+                                        "example": 300
+                                    },
+                                    "stok": {
+                                        "type": "integer",
+                                        "example": 15
+                                    },
+                                    "deskripsi": {
+                                        "type": "string",
+                                        "example": "Beras putih pulen",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Hadiah berhasil ditambahkan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/hadiahs/bulk": {
+            "post": {
+                "tags": [
+                    "Admin - Katalog Hadiah"
+                ],
+                "summary": "Impor Batch Katalog Hadiah (CSV / XLSX Parsed Rows)",
+                "operationId": "9699433425c6f227e0147434d4021384",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "items"
+                                ],
+                                "properties": {
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "nama",
+                                                "poin_diperlukan",
+                                                "stok"
+                                            ],
+                                            "properties": {
+                                                "nama": {
+                                                    "type": "string",
+                                                    "example": "Gula Pasir 1 kg"
+                                                },
+                                                "poin_diperlukan": {
+                                                    "type": "integer",
+                                                    "example": 120
+                                                },
+                                                "stok": {
+                                                    "type": "integer",
+                                                    "example": 30
+                                                },
+                                                "deskripsi": {
+                                                    "type": "string",
+                                                    "example": "Gula tebu murni 1 kg",
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Semua baris hadiah berhasil diimpor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/hadiahs/{id}": {
+            "get": {
+                "tags": [
+                    "Admin - Katalog Hadiah"
+                ],
+                "summary": "Detail Hadiah",
+                "operationId": "21df42d0b40a0816063b26fe3b45ff4c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail hadiah",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Admin - Katalog Hadiah"
+                ],
+                "summary": "Perbarui Hadiah",
+                "operationId": "b2ab629353307fef0314e7f23e6914a2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "stok": {
+                                        "type": "integer",
+                                        "example": 45
+                                    },
+                                    "poin_diperlukan": {
+                                        "type": "integer",
+                                        "example": 115
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Hadiah berhasil diupdate",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin - Katalog Hadiah"
+                ],
+                "summary": "Hapus Hadiah",
+                "operationId": "a49d11660d232b6f78870d1533fa23b5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Hadiah berhasil dihapus"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/nasabahs": {
+            "get": {
+                "tags": [
+                    "Admin - Nasabah & Verifikasi"
+                ],
+                "summary": "Daftar Nasabah Terdaftar Pada Unit",
+                "operationId": "41bdc92e83b388ae345f3f009e25a374",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar nasabah unit",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin - Nasabah & Verifikasi"
+                ],
+                "summary": "Pendaftaran Manual Nasabah oleh Admin Unit",
+                "operationId": "6ac79be909268831e6699da0359d7005",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Siti Rahma"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "siti.rahma@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "PassNasabah123!"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "082188997766"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "RT 04 / RW 02"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Nasabah berhasil didaftarkan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/nasabahs/{id}": {
+            "get": {
+                "tags": [
+                    "Admin - Nasabah & Verifikasi"
+                ],
+                "summary": "Detail Informasi & Riwayat Nasabah",
+                "operationId": "5e7e86a642b39c73a841923177258034",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail nasabah",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Admin - Nasabah & Verifikasi"
+                ],
+                "summary": "Perbarui Data Nasabah",
+                "operationId": "ccda99d82bba311605dc7ebccc302b57",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Siti Rahmawati"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "082188997700"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Nasabah berhasil diupdate",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin - Nasabah & Verifikasi"
+                ],
+                "summary": "Hapus / Nonaktifkan Nasabah",
+                "operationId": "14b55a0d86f3454231c1c46b1c78e307",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Nasabah berhasil dihapus"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/setorans": {
+            "get": {
+                "tags": [
+                    "Admin - Nasabah & Verifikasi"
+                ],
+                "summary": "Daftar Setoran Masuk untuk Verifikasi Petugas",
+                "operationId": "b8b3a9be6c98e2fa5e0af5ca871af603",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "all",
+                                "menunggu",
+                                "diterima",
+                                "ditolak"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar setoran untuk diverifikasi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/SetoranSampah"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/components/schemas/PaginationMeta"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/setorans/{setoran}/verify": {
+            "post": {
+                "tags": [
+                    "Admin - Nasabah & Verifikasi"
+                ],
+                "summary": "Verifikasi dan Penimbangan Setoran Sampah",
+                "description": "Petugas memasukkan berat aktual hasil penimbangan dan memvalidasi setoran.",
+                "operationId": "4ca9978c43611032fde2e1cfca68b157",
+                "parameters": [
+                    {
+                        "name": "setoran",
+                        "in": "path",
+                        "description": "ID Setoran",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "example": "diterima",
+                                        "enum": [
+                                            "diterima",
+                                            "ditolak"
+                                        ]
+                                    },
+                                    "berat_aktual": {
+                                        "description": "Wajib diisi jika status diterima",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 4.2
+                                    },
+                                    "catatan_petugas": {
+                                        "type": "string",
+                                        "example": "Sampah sudah dipilah bersih",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Setoran berhasil diverifikasi dan poin nasabah bertambah",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/rekap": {
+            "get": {
+                "tags": [
+                    "Admin - Nasabah & Verifikasi"
+                ],
+                "summary": "Rekapitulasi Laporan & Statistik Bank Sampah Unit",
+                "operationId": "0dfe2b48b791134346c737b809378687",
+                "parameters": [
+                    {
+                        "name": "period",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "monthly",
+                            "enum": [
+                                "daily",
+                                "weekly",
+                                "monthly",
+                                "yearly"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2026-01-01"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2026-03-31"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Statistik agregasi rekapitulasi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "total_berat_kg": {
+                                                    "type": "number",
+                                                    "example": 1450.8
+                                                },
+                                                "total_transaksi": {
+                                                    "type": "integer",
+                                                    "example": 312
+                                                },
+                                                "total_poin_dikeluarkan": {
+                                                    "type": "integer",
+                                                    "example": 48200
+                                                },
+                                                "total_nasabah_aktif": {
+                                                    "type": "integer",
+                                                    "example": 128
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ops/dashboard": {
+            "get": {
+                "tags": [
+                    "Platform Ops - Superadmin"
+                ],
+                "summary": "Dashboard Global Metrik Platform (Superadmin)",
+                "operationId": "70b260a244e48401e93a7052b434a6c9",
+                "responses": {
+                    "200": {
+                        "description": "Metrik global platform seluruh unit",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "total_units": {
+                                                    "type": "integer",
+                                                    "example": 14
+                                                },
+                                                "total_users": {
+                                                    "type": "integer",
+                                                    "example": 1840
+                                                },
+                                                "total_sampah_kg": {
+                                                    "type": "number",
+                                                    "example": 12540.5
+                                                },
+                                                "total_penukaran_poin": {
+                                                    "type": "integer",
+                                                    "example": 240100
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ops/users": {
+            "get": {
+                "tags": [
+                    "Platform Ops - Superadmin"
+                ],
+                "summary": "Daftar Pengguna Seluruh Unit",
+                "operationId": "18076fc0f522c3b82a4f2e1e4e0ebba2",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "role",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "unit_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar seluruh pengguna sistem",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Platform Ops - Superadmin"
+                ],
+                "summary": "Buat Pengguna Baru Lintas Unit",
+                "operationId": "ca8eef9ec19e0de392665d494607fccf",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "role",
+                                    "unit_id"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Koordinator Unit Baru"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "koordinator@banksampah.id"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "PassMaster123!"
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "example": "admin_unit",
+                                        "enum": [
+                                            "nasabah",
+                                            "admin_unit",
+                                            "petugas",
+                                            "superadmin"
+                                        ]
+                                    },
+                                    "unit_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Pengguna berhasil dibuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ops/users/{user}": {
+            "put": {
+                "tags": [
+                    "Platform Ops - Superadmin"
+                ],
+                "summary": "Perbarui Pengguna & Role / Unit",
+                "operationId": "d40f4d785167feea3bbb284e1475272f",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "role": {
+                                        "type": "string",
+                                        "example": "petugas"
+                                    },
+                                    "unit_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Pengguna berhasil diupdate",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Platform Ops - Superadmin"
+                ],
+                "summary": "Hapus Pengguna",
+                "operationId": "b6b48f700c92dca6774bad0edf96394d",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Pengguna berhasil dihapus"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ops/roles": {
+            "get": {
+                "tags": [
+                    "Platform Ops - Superadmin"
+                ],
+                "summary": "Daftar Peran Sistem",
+                "operationId": "3c237cd56130c7f05d3c3b4874993f00",
+                "responses": {
+                    "200": {
+                        "description": "Daftar peran yang didukung",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ops/units": {
+            "get": {
+                "tags": [
+                    "Platform Ops - Superadmin"
+                ],
+                "summary": "Daftar Seluruh Unit Bank Sampah",
+                "operationId": "8ad8c603ce306ef4601454085746dbf3",
+                "responses": {
+                    "200": {
+                        "description": "Daftar semua unit bank sampah",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Platform Ops - Superadmin"
+                ],
+                "summary": "Pendaftaran Unit Bank Sampah Baru",
+                "operationId": "fe21279121fdc17607dce458d8612720",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "kode"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Bank Sampah Berkah Hijau"
+                                    },
+                                    "kode": {
+                                        "type": "string",
+                                        "example": "BSBH-02"
+                                    },
+                                    "alamat": {
+                                        "type": "string",
+                                        "example": "Jl. Kamboja No. 10",
+                                        "nullable": true
+                                    },
+                                    "telepon": {
+                                        "type": "string",
+                                        "example": "085612345678",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Unit bank sampah berhasil didaftarkan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSuccess"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ApiResponseSuccess": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Operasi berhasil."
+                    },
+                    "data": {
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "ApiResponseError": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Validasi gagal atau data tidak ditemukan."
+                    },
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "PaginationMeta": {
+                "properties": {
+                    "page": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "pageSize": {
+                        "type": "integer",
+                        "example": 15
+                    },
+                    "total": {
+                        "type": "integer",
+                        "example": 42
+                    }
+                },
+                "type": "object"
+            },
+            "UnitBankSampah": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Bank Sampah Sukamaju"
+                    },
+                    "kode": {
+                        "type": "string",
+                        "example": "BSS-01"
+                    },
+                    "alamat": {
+                        "type": "string",
+                        "example": "Jl. Merdeka No. 45, Jakarta",
+                        "nullable": true
+                    },
+                    "telepon": {
+                        "type": "string",
+                        "example": "081234567890",
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Budi Santoso"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "budi@example.com"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "081298765432",
+                        "nullable": true
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "nasabah",
+                        "enum": [
+                            "nasabah",
+                            "admin_unit",
+                            "petugas",
+                            "superadmin"
+                        ]
+                    },
+                    "unit_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "avatar_url": {
+                        "type": "string",
+                        "example": "https://images.unsplash.com/photo-1534528741775-53994a69daeb",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-01T08:00:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "KategoriSampah": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "unit_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "nama": {
+                        "type": "string",
+                        "example": "Botol Plastik PET Bersih"
+                    },
+                    "jenis": {
+                        "type": "string",
+                        "example": "plastik",
+                        "enum": [
+                            "plastik",
+                            "kertas",
+                            "logam",
+                            "kaca"
+                        ]
+                    },
+                    "harga_per_kg": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 4500
+                    },
+                    "poin_per_kg": {
+                        "type": "integer",
+                        "example": 45
+                    },
+                    "deskripsi": {
+                        "type": "string",
+                        "example": "Botol air mineral transparan tanpa tutup dan label",
+                        "nullable": true
+                    },
+                    "foto_url": {
+                        "type": "string",
+                        "example": "https://images.unsplash.com/photo-1526951521990-620dc14c214b",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-01T09:30:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "Hadiah": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 8
+                    },
+                    "unit_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "nama": {
+                        "type": "string",
+                        "example": "Minyak Goreng 1 Liter"
+                    },
+                    "poin_diperlukan": {
+                        "type": "integer",
+                        "example": 150
+                    },
+                    "stok": {
+                        "type": "integer",
+                        "example": 25
+                    },
+                    "deskripsi": {
+                        "type": "string",
+                        "example": "Minyak goreng kelapa sawit higienis pouch 1L",
+                        "nullable": true
+                    },
+                    "foto_url": {
+                        "type": "string",
+                        "example": "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-01T10:00:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "SetoranSampah": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 120
+                    },
+                    "unit_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "kategori_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "berat_estimasi": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 3.5
+                    },
+                    "berat_aktual": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 3.6,
+                        "nullable": true
+                    },
+                    "total_poin": {
+                        "type": "integer",
+                        "example": 162,
+                        "nullable": true
+                    },
+                    "total_rupiah": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 16200,
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "menunggu",
+                        "enum": [
+                            "menunggu",
+                            "diterima",
+                            "ditolak"
+                        ]
+                    },
+                    "catatan": {
+                        "type": "string",
+                        "example": "Sudah dipilah dan dibersihkan",
+                        "nullable": true
+                    },
+                    "catatan_petugas": {
+                        "type": "string",
+                        "example": "Kondisi bersih dan kering",
+                        "nullable": true
+                    },
+                    "foto_url": {
+                        "type": "string",
+                        "example": "https://storage.hijauin.id/setorans/sample.jpg",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-15T14:20:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "PenukaranHadiah": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 44
+                    },
+                    "unit_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "hadiah_id": {
+                        "type": "integer",
+                        "example": 8
+                    },
+                    "jumlah": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "total_poin": {
+                        "type": "integer",
+                        "example": 150
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "selesai",
+                        "enum": [
+                            "pending",
+                            "diproses",
+                            "selesai",
+                            "dibatalkan"
+                        ]
+                    },
+                    "catatan": {
+                        "type": "string",
+                        "example": "Diambil saat jadwal operasional",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-18T10:15:00Z"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Gunakan Bearer Token yang didapatkan dari login/register (contoh: Authorization: Bearer 1|abcdef123456...)",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            },
+            "sanctum": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "description": "Masukkan Bearer Token hasil autentikasi login atau register (contoh: 1|xxxxxxxx...)"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Auth",
+            "description": "Otentikasi publik, registrasi pengguna (Nasabah/Petugas/Admin), login kredensial, Google OAuth, daftar unit, dan pengecekan sesi (/me)."
+        },
+        {
+            "name": "Upload",
+            "description": "Unggah berkas / gambar (bukti setoran, foto kategori sampah, foto hadiah, avatar) ke storage S3/MinIO atau lokal."
+        },
+        {
+            "name": "Nasabah - Profil & Katalog",
+            "description": "Fitur nasabah: profil pengguna, katalog kategori sampah unit, dan katalog hadiah penukaran poin."
+        },
+        {
+            "name": "Nasabah - Setoran & Penukaran",
+            "description": "Fitur nasabah: pengajuan setoran sampah, riwayat setoran, serta penukaran saldo poin hadiah."
+        },
+        {
+            "name": "Admin - Kategori Sampah",
+            "description": "Manajemen master kategori sampah unit, harga per kg, poin per kg, dan impor batch spreadsheet CSV/XLSX."
+        },
+        {
+            "name": "Admin - Katalog Hadiah",
+            "description": "Manajemen master katalog hadiah unit, stok, poin yang dibutuhkan, dan impor batch spreadsheet CSV/XLSX."
+        },
+        {
+            "name": "Admin - Nasabah & Verifikasi",
+            "description": "Manajemen data nasabah, verifikasi penimbangan setoran sampah, dan rekapitulasi data periodik."
+        },
+        {
+            "name": "Platform Ops - Superadmin",
+            "description": "Operasional superuser platform: dashboard metrik global, kelola seluruh unit bank sampah, dan pengguna lintas unit."
+        }
+    ],
+    "security": [
+        {
+            "sanctum": []
+        }
+    ]
+}
