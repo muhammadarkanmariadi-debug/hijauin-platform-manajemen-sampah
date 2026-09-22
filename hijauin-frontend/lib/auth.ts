@@ -19,7 +19,7 @@ interface AuthState {
   // Actions
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
-  googleAuth: (data: GoogleAuthData) => Promise<void>;
+  googleAuth: (data: GoogleAuthData) => Promise<AuthResponse>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   setLoading: (loading: boolean) => void;
@@ -75,6 +75,7 @@ export const useAuthStore = create<AuthState>()(
 
         localStorage.setItem('auth_token', token);
         set({ user, token, isAuthenticated: true });
+        return data.data;
       },
 
       logout: async () => {

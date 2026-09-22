@@ -56,7 +56,7 @@ export function GoogleAuthButton({
         }
 
         // Authenticate with Laravel Backend
-        await googleAuthMutation.mutateAsync({
+        const authResult = await googleAuthMutation.mutateAsync({
           email,
           full_name: name || email.split('@')[0],
           photo_url: picture || null,
@@ -67,7 +67,11 @@ export function GoogleAuthButton({
           onSuccess();
         } else {
           const currentUser = useAuthStore.getState().user;
-          router.push(getDefaultDashboard(currentUser));
+          if (authResult?.is_new_user || mode === 'register') {
+            router.push('/onboarding');
+          } else {
+            router.push(getDefaultDashboard(currentUser));
+          }
         }
       } catch (err: unknown) {
         console.error('Google Client Auth Error:', err);

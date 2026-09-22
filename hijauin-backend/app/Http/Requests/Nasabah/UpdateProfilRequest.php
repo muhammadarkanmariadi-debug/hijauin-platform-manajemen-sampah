@@ -18,6 +18,7 @@ class UpdateProfilRequest extends FormRequest
             'phone' => 'sometimes|nullable|string|max:20',
             'photo_url' => 'sometimes|nullable|string',
             'alamat' => 'sometimes|nullable|string',
+            'unit_id' => 'sometimes|nullable|integer|exists:bank_sampah_units,id',
         ];
     }
 }

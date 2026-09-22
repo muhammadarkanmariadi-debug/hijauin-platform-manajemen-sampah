@@ -69,8 +69,8 @@ export function useGoogleAuth() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: GoogleAuthData) => {
-      await useAuthStore.getState().googleAuth(data);
+    mutationFn: async (data: GoogleAuthData): Promise<import('../types').AuthResponse> => {
+      return await useAuthStore.getState().googleAuth(data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['auth'] });
@@ -100,6 +100,7 @@ export function useUpdateProfile() {
       phone?: string;
       alamat?: string;
       photo_url?: string | null;
+      unit_id?: number;
     }) => {
       const { data } = await api.put<{ data: User }>('/nasabah/profil', payload);
       return data.data;

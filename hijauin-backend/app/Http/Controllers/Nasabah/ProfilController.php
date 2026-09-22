@@ -43,15 +43,28 @@ class ProfilController extends Controller
         $user->update(collect($validated)->only(['full_name', 'phone', 'photo_url'])->toArray());
 
         // Update profile-level fields
+        $profileUpdates = [];
         if (isset($validated['alamat'])) {
-            $user->nasabahProfile->update(['alamat' => $validated['alamat']]);
+            $profileUpdates['alamat'] = $validated['alamat'];
+        }
+        if (isset($validated['unit_id'])) {
+            $profileUpdates['unit_id'] = $validated['unit_id'];
+
+            // Also synchronize unit_id on the user's nasabah user_role record
+            $user->userRoles()
+                ->whereHas('role', fn($q) => $q->where('code', 'nasabah'))
+                ->update(['unit_id' => $validated['unit_id']]);
+        }
+
+        if (!empty($profileUpdates)) {
+            $user->nasabahProfile->update($profileUpdates);
         }
 
         // Invalidate profile cache
         Cache::forget("nasabah:profil:u{$user->id}");
 
         return $this->successResponse(
-            $user->fresh()->load('nasabahProfile')
+            $user->fresh()->load(['nasabahProfile.unit', 'userRoles.unit', 'userRoles.role'])
         );
     }
 }

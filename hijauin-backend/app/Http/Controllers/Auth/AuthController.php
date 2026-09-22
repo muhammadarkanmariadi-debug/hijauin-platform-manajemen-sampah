@@ -111,7 +111,10 @@ class AuthController extends Controller
 
         $user = User::where('email', $validated['email'])->first();
 
+        $isNewUser = false;
+
         if (!$user) {
+            $isNewUser = true;
             // Pick requested unit or default to first available unit
             $unitId = $validated['unit_id'] ?? BankSampahUnit::value('id') ?? 1;
 
@@ -147,6 +150,7 @@ class AuthController extends Controller
         return $this->successResponse([
             'user' => $user->load(['userRoles.role', 'userRoles.unit', 'nasabahProfile.unit']),
             'token' => $token,
+            'is_new_user' => $isNewUser,
         ]);
     }
 

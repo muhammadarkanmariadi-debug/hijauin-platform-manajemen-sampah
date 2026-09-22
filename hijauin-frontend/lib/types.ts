@@ -77,6 +77,7 @@ export interface Role {
 export interface AuthResponse {
   user: User;
   token: string;
+  is_new_user?: boolean;
 }
 
 // ── Domain Entities ─────────────────────────────────────
